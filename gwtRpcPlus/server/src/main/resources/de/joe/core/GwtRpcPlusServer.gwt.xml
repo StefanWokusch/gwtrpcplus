@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+	<inherits name='de.joe.core.GwtRpcPlusModel' />
+
+	<source path='rpc/shared' />
+</module>

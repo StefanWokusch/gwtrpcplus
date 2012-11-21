@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+	<inherits name='com.google.gwt.user.User' />
+	<inherits name='com.google.gwt.rpc.RPC' />
+	<inherits name='de.joe.core.GwtRpcPlusServer' />
+	
+	<source path='rpc/client' />
+
+	<generate-with class="de.joe.core.rpc.rebind.RpcServiceGenerator">
+		<when-type-assignable class="com.google.gwt.user.client.rpc.RemoteService" />
+	</generate-with>
+</module>
