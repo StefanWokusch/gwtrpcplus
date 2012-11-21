@@ -11,19 +11,20 @@ public class ConnectionWebsocket extends AbstractConnection {
 
   @Override
   public void connect() {
+    if (websocket.isSupported())
+      websocket.connect(GWT.getModuleBaseURL().replace("http:", "ws:").replace("https:", "wss:")
+          + "gwtRpcPlusWebsocket");
   }
 
   @Override
   public void disconnect() {
+    websocket.disconnect();
   }
 
   private final WebSocketKeepOnline websocket;
 
   public ConnectionWebsocket() {
     websocket = new WebSocketKeepOnline(callback);
-    if (websocket.isSupported())
-      websocket.connect(GWT.getModuleBaseURL().replace("http:", "ws:").replace("https:", "wss:")
-          + "gwtRpcPlusWebsocket");
   }
 
   private final Callback callback = new Callback() {

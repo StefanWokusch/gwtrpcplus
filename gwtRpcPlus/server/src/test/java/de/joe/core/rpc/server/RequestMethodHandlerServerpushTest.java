@@ -137,6 +137,15 @@ public class RequestMethodHandlerServerpushTest {
   }
 
   @Test
+  public void finish() {
+    toTest.process(SERVICENAME, createStartData(), null, answerer);
+
+    service.aliveHandlers.get(0).finish("a1");
+
+    verify(answerer).send(eq("f|OK|a1|"));
+  }
+
+  @Test
   public void cancelRequest() {
     toTest.process(SERVICENAME, createStartData(), null, answerer);
     toTest.process(SERVICENAME, createCancelData(), null, answerer);
