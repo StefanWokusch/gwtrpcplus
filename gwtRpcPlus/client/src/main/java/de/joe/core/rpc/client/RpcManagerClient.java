@@ -1,6 +1,9 @@
 package de.joe.core.rpc.client;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import com.google.gwt.http.client.Request;
@@ -20,52 +23,106 @@ public class RpcManagerClient {
 
   public static RpcManagerClient get() {
     if (instance == null)
-      instance = new RpcManagerClient();
+      instance = new RpcManagerClient(new ConnectionProvider() {
+        @Override
+        public List<Connection> get() {
+          return new ArrayList<Connection>(Arrays.asList(new Connection[]{
+              // TODO make configurable
+              new ConnectionWebsocket(), new ConnectionBasic()
+          }));
+        }
+      });
     return instance;
   }
 
-  // TODO make this configurable
-  private final ConnectionWebsocket wsconnection = new ConnectionWebsocket();
-  private final Connection basicconnection = new ConnectionBasic();
+  public enum ConnectionState {
+    DISCONNECTED, TRYCONNECT, CONNECTED
+  }
 
-  public RpcManagerClient() {
-    wsconnection.setHandler(recieveHandler);
-    basicconnection.setHandler(recieveHandler);
+  private class ConnectionWrapper {
+    public Connection connection;
+    public ConnectionState state = ConnectionState.DISCONNECTED;
+
+    public ConnectionWrapper(Connection c) {
+      connection = c;
+    }
+  }
+
+  /**
+   * available Connections, sorted by priority (first = highest priority)
+   */
+  private List<ConnectionWrapper> connections = new ArrayList<ConnectionWrapper>();
+
+  private ConnectionWrapper getActiveConnection() {
+    for (ConnectionWrapper w : connections)
+      if (w.state == ConnectionState.CONNECTED)
+        return w;
+    return null;
+  }
+
+  public RpcManagerClient(ConnectionProvider prov) {
+    for (final Connection c : prov.get()) {
+      final ConnectionWrapper wrapper = new ConnectionWrapper(c);
+      connections.add(wrapper);
+      c.setHandler(new RecieveHandler() {
+        @Override
+        public void onRecieve(String answer) {
+          RpcManagerClient.this.onRecieve(answer);
+        }
+
+        @Override
+        public void onDisconnect() {
+          assert (wrapper.state != ConnectionState.DISCONNECTED);
+          wrapper.state = ConnectionState.DISCONNECTED;
+          RpcManagerClient.this.onDisconnect(c);
+        }
+
+        @Override
+        public void onConnected() {
+          assert (wrapper.state == ConnectionState.TRYCONNECT);
+          wrapper.state = ConnectionState.CONNECTED;
+          RpcManagerClient.this.onConnected(c);
+        }
+      });
+      c.connect();
+      wrapper.state = ConnectionState.TRYCONNECT;
+    }
   }
 
   private void send(String request) {
-    if (wsconnection.isConnected()) {
-      // System.out.println("Sending via Websockets " + request);
-      wsconnection.send(request);
-    } else {
-      // System.out.println("Sending via Http " + request);
-      basicconnection.send(request);
-    }
+    ConnectionWrapper con = getActiveConnection();
+    con.connection.send(request);
   }
 
-  private final RecieveHandler recieveHandler = new RecieveHandler() {
-    @Override
-    public void onRecieve(String data) {
-      final String id = data.substring(0, data.indexOf("#"));
-      data = data.substring(data.indexOf("#") + 1);
+  private void onRecieve(String data) {
+    final String id = data.substring(0, data.indexOf("#"));
+    data = data.substring(data.indexOf("#") + 1);
 
-      RequestPlus request = requests.get(id);
-      if (request != null) {
-        request.onAnswer(data);
-      } else
-        System.out.println("Ignoring Answer " + id + ": " + data);
-    }
+    RequestPlus request = requests.get(id);
+    if (request != null) {
+      request.onAnswer(data);
+    } else
+      System.out.println("Ignoring Answer " + id + ": " + data);
+  }
 
-    @Override
-    public void onDisconnect() {
-      // System.out.println("onDisconnect");
-    }
+  private void onDisconnect(Connection c) {
+    ConnectionWrapper activeConnection = getActiveConnection();
+    if (activeConnection == null)
+      for (ConnectionWrapper w : connections)
+        if (w.state == ConnectionState.DISCONNECTED)
+          w.connection.connect();
+  }
 
-    @Override
-    public void onConnected() {
-      // System.out.println("onConnected");
+  private void onConnected(Connection c) {
+    ConnectionWrapper activeConnection = getActiveConnection();
+    assert (activeConnection != null);
+    boolean isLowerThanActive = false;
+    for (ConnectionWrapper w : connections) {
+      isLowerThanActive = isLowerThanActive || w.equals(activeConnection);
+      if (isLowerThanActive && !w.equals(activeConnection) && w.state != ConnectionState.DISCONNECTED)
+        w.connection.disconnect();
     }
-  };
+  }
 
   private int currentId = 1;
   private final HashMap<String, RequestPlus> requests = new HashMap<String, RequestPlus>();
@@ -91,7 +148,7 @@ public class RpcManagerClient {
 
   public Request call(RequestMethod method, String requestData, RequestCallback requestCallback) {
     method.setHandler(handler);
-    // TODO Remove this Method and replace calls directly to the methods?
+    // TODO Remove this method and replace calls directly to the methods?
     return method.call(requestData, requestCallback);
   }
 
