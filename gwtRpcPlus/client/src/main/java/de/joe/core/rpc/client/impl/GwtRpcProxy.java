@@ -1,5 +1,7 @@
 package de.joe.core.rpc.client.impl;
 
+import java.util.HashMap;
+
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -19,36 +21,26 @@ public abstract class GwtRpcProxy extends RemoteServiceProxy {
   protected GwtRpcProxy(String moduleBaseURL, String remoteServiceRelativePath, String serializationPolicyName,
       Serializer serializer) {
     super(moduleBaseURL, remoteServiceRelativePath, serializationPolicyName, serializer);
-    // RpcWebsocket.verifyInit();
-    // for (String s : noBundles())
-    // noBundles.add(s);
+    methods = new HashMap<String, RequestMethod>();
+    addMethods(methods);
   }
 
-  // private final HashSet<String> noBundles = new HashSet<String>();
+  private final HashMap<String, RequestMethod> methods;
 
-  protected abstract String[] noBundles();
+  protected abstract void addMethods(HashMap<String, RequestMethod> methods);
 
   @Override
   protected <T> Request doInvoke(ResponseReader responseReader, String methodName, RpcStatsContext statsContext,
       String requestData, AsyncCallback<T> callback) {
 
-    RequestCallback requestCallback = doCreateRequestCallback(responseReader, methodName, statsContext, callback);
-    // methodname starts with the servicename the _Proxy of this overwritten AsyncImpl
-    String service = methodName.substring(0, methodName.lastIndexOf("_Proxy"));
+    String realMethodName = methodName.substring(methodName.lastIndexOf(".") + 1);
 
-    // FIXME generate these (and use singletons
-    RequestMethod method = new RequestMethodBasic(service);
+    RequestMethod method = methods.get(realMethodName);
+    assert (method != null) : "Method " + realMethodName + " of " + this.getClass() + " isn't registrerd";
+
+    RequestCallback requestCallback = doCreateRequestCallback(responseReader, methodName, statsContext, callback);
 
     return RpcManagerClient.get().call(method, requestData, requestCallback);
-
-    // // Check for websockets
-    // if (RpcWebsocket.isConnected()) {
-    // return RpcWebsocket.doInvokeByWebSocket(service, requestData, requestCallback);
-    // } else if (!noBundles.contains(methodName)) {
-    // return RpcBundle.doInvokeByBundle(service, requestData, requestCallback);
-    // } else {
-    // return super.doInvoke(responseReader, methodName, statsContext, requestData, callback);
-    // }
   }
 
 }
