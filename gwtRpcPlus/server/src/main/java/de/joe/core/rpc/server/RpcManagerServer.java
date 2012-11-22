@@ -1,6 +1,7 @@
 package de.joe.core.rpc.server;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +17,7 @@ import de.joe.core.rpc.server.RequestMethodHandler.RequestMethodAnswerer;
 import de.joe.core.rpc.server.util.HttpServletRequestGwtRpc;
 
 public class RpcManagerServer {
-  private final RequestMethodHandlerBasic basic;
+  private final HashMap<String, RequestMethodHandler> requestMethodHandlers;
 
   // TODO Timeout of clients and queues
   private final ConcurrentHashMap<String, BlockingQueue<String>> answers = new ConcurrentHashMap<String, BlockingQueue<String>>();
@@ -36,8 +37,11 @@ public class RpcManagerServer {
   }
 
   @Inject
-  public RpcManagerServer(RequestMethodHandlerBasic basic) {
-    this.basic = basic;
+  public RpcManagerServer(RequestMethodHandlerBasic basic, RequestMethodHandlerServerpush push) {
+    // TODO Configuratble
+    this.requestMethodHandlers = new HashMap<>();
+    this.requestMethodHandlers.put(basic.getRequestTypeName(), basic);
+    this.requestMethodHandlers.put(push.getRequestTypeName(), push);
   }
 
   public void onCall(final String clientId, String data, String permStrongName, String reqModuleBasePath) {
@@ -47,10 +51,15 @@ public class RpcManagerServer {
   public void onCall(final String clientId, String data, HttpServletRequest req) {
     final String id = data.substring(0, data.indexOf("#"));
     data = data.substring(data.indexOf("#") + 1);
+    final String type = data.substring(0, data.indexOf("#"));
+    data = data.substring(data.indexOf("#") + 1);
     final String service = data.substring(0, data.indexOf("#"));
     data = data.substring(data.indexOf("#") + 1);
 
-    basic.process(service, data, req, new RequestMethodAnswerer() {
+    RequestMethodHandler h = requestMethodHandlers.get(type);
+    if (h == null)
+      throw new IllegalArgumentException("Type \"" + type + "\" isn't registered");
+    h.process(service, data, req, new RequestMethodAnswerer() {
       @Override
       public void send(String answer) {
         String response = id + "#" + answer;

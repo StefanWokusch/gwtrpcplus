@@ -8,4 +8,9 @@ public interface RequestMethodHandler {
   }
 
   void process(String service, String data, HttpServletRequest request, RequestMethodAnswerer answerer);
+
+  /**
+   * @return Name of the Methodtype, matching with the RequestMethod on the Cient
+   */
+  String getRequestTypeName();
 }

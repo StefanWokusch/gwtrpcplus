@@ -25,6 +25,11 @@ public interface RequestMethod {
      * @param answer answer from the server
      */
     void onAnswer(String answer);
+
+    /**
+     * @return a unique name for the Method, matching to some RequestMethodHandler on the Serverside
+     */
+    String getRequestTypeName();
   }
 
   public static interface ConnectionHandler {
@@ -48,6 +53,7 @@ public interface RequestMethod {
   }
 
   void setHandler(ConnectionHandler handler);
+
 
   /**
    * Called when the Async Method is invoked

@@ -19,6 +19,7 @@ public class ConnectionWebsocket extends AbstractConnection {
   @Override
   public void disconnect() {
     websocket.disconnect();
+    onDisconnect();
   }
 
   private final WebSocketKeepOnline websocket;
@@ -56,9 +57,4 @@ public class ConnectionWebsocket extends AbstractConnection {
   public void send(String request) {
     websocket.send(request);
   }
-
-  public boolean isConnected() {
-    return websocket.isConnected();
-  }
-
 }

@@ -28,7 +28,8 @@ public class RpcManagerClient {
         public List<Connection> get() {
           return new ArrayList<Connection>(Arrays.asList(new Connection[]{
               // TODO make configurable
-              new ConnectionWebsocket(), new ConnectionBasic()
+              new ConnectionWebsocket(),//
+              new ConnectionBasic()
           }));
         }
       });
@@ -72,20 +73,22 @@ public class RpcManagerClient {
 
         @Override
         public void onDisconnect() {
-          assert (wrapper.state != ConnectionState.DISCONNECTED);
-          wrapper.state = ConnectionState.DISCONNECTED;
-          RpcManagerClient.this.onDisconnect(c);
+          if (wrapper.state != ConnectionState.DISCONNECTED) {
+            wrapper.state = ConnectionState.DISCONNECTED;
+            RpcManagerClient.this.onDisconnect(c);
+          }
         }
 
         @Override
         public void onConnected() {
-          assert (wrapper.state == ConnectionState.TRYCONNECT);
+          assert (wrapper.state == ConnectionState.TRYCONNECT) : "You cant call onconnected when you are "
+              + wrapper.state;
           wrapper.state = ConnectionState.CONNECTED;
           RpcManagerClient.this.onConnected(c);
         }
       });
-      c.connect();
       wrapper.state = ConnectionState.TRYCONNECT;
+      c.connect();
     }
   }
 
@@ -95,6 +98,11 @@ public class RpcManagerClient {
   }
 
   private void onRecieve(String data) {
+    if (data.isEmpty())
+      return;
+
+    System.out.println("recieve " + data);
+
     final String id = data.substring(0, data.indexOf("#"));
     data = data.substring(data.indexOf("#") + 1);
 
@@ -132,7 +140,7 @@ public class RpcManagerClient {
     public void addRequest(RequestPlus request) {
       String id = "" + (currentId++);
       requests.put(id, request);
-      send(id + "#" + request.getServiceName() + "#" + request.getRequestString());
+      send(id + "#" + request.getRequestTypeName() + "#" + request.getServiceName() + "#" + request.getRequestString());
     }
 
     @Override

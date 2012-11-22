@@ -21,6 +21,11 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
 
   private final RpcHelper helper;
 
+  @Override
+  public String getRequestTypeName() {
+    return "p";
+  }
+
   @Inject
   public RequestMethodHandlerServerpush(RpcHelper helper) {
     this.helper = helper;

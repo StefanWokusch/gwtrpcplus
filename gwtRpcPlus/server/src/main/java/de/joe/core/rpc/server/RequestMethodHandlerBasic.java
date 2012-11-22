@@ -14,6 +14,11 @@ public class RequestMethodHandlerBasic implements RequestMethodHandler {
 
   private final RpcHelper helper;
 
+  @Override
+  public String getRequestTypeName() {
+    return "b";
+  }
+
   @Inject
   public RequestMethodHandlerBasic(RpcHelper helper) {
     this.helper = helper;

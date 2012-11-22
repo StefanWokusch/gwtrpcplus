@@ -9,6 +9,7 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
   private final String serviceName;
 
+
   public RequestMethodServerpush(String serviceName) {
     this.serviceName = serviceName;
   }
@@ -16,6 +17,11 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
   private final class ServerpushRequest implements RequestPlus {
     private final String requestData;
     private final RequestCallback callback;
+
+    @Override
+    public String getRequestTypeName() {
+      return "p";
+    }
 
     private ServerpushRequest(String requestData, RequestCallback callback) {
       this.requestData = requestData;
@@ -46,7 +52,7 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
   @Override
   public Request call(String requestData, RequestCallback requestCallback) {
-    addRequest(new ServerpushRequest(requestData, requestCallback));
+    addRequest(new ServerpushRequest("s" + requestData, requestCallback));
     return null;
   }
 

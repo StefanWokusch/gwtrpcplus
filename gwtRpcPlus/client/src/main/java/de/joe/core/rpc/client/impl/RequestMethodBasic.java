@@ -9,6 +9,7 @@ public class RequestMethodBasic extends AbstractRequestMethod {
 
   private final String serviceName;
 
+
   public RequestMethodBasic(String serviceName) {
     this.serviceName = serviceName;
   }
@@ -16,6 +17,11 @@ public class RequestMethodBasic extends AbstractRequestMethod {
   private final class BasicRequest implements RequestPlus {
     private final String requestData;
     private final RequestCallback callback;
+
+    @Override
+    public String getRequestTypeName() {
+      return "b";
+    }
 
     private BasicRequest(String requestData, RequestCallback callback) {
       this.requestData = requestData;

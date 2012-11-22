@@ -33,7 +33,7 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
       clientId = UUID.randomUUID().toString();
     }
 
-//    String contextPath = req.getContextPath();
+    // String contextPath = req.getContextPath();
     String strongname = req.getHeader(RpcRequestBuilder.STRONG_NAME_HEADER);
     String modulebase = req.getHeader(RpcRequestBuilder.MODULE_BASE_HEADER);
 
@@ -41,7 +41,9 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
     // TODO Make async
     String response = manager.getResponse(clientId);
 
-    resp.getWriter().write(response);
+    if (response != null) {
+      resp.getWriter().write(response);
+    }
 
     resp.setStatus(HttpServletResponse.SC_OK);
   }
