@@ -21,6 +21,10 @@ import de.joe.core.rpc.client.impl.ConnectionWebsocket;
 public class RpcManagerClient {
   private static RpcManagerClient instance;
 
+  public static void log(String text) {
+    // GWT.log(text);
+  }
+
   public static RpcManagerClient get() {
     if (instance == null)
       instance = new RpcManagerClient(new ConnectionProvider() {
@@ -67,8 +71,13 @@ public class RpcManagerClient {
       connections.add(wrapper);
       c.setHandler(new RecieveHandler() {
         @Override
-        public void onRecieve(String answer) {
-          RpcManagerClient.this.onRecieve(answer);
+        public void onRecieve(String data) {
+          if (data.isEmpty())
+            return;
+          assert (data.contains("#")) : "Illegal protocol: \"" + data + "\"";
+          log("recieve from " + c.getClass() + " " + (data.length() <= 100 ? data : data.subSequence(0, 100)));
+
+          RpcManagerClient.this.onRecieve(data);
         }
 
         @Override
@@ -98,28 +107,25 @@ public class RpcManagerClient {
   }
 
   private void onRecieve(String data) {
-    if (data.isEmpty())
-      return;
-    assert (data.contains("#")) : "Illegal protocol: \"" + data + "\"";
-
-    System.out.println("recieve " + data);
-
     final String id = data.substring(0, data.indexOf("#"));
     data = data.substring(data.indexOf("#") + 1);
 
     RequestPlus request = requests.get(id);
     if (request != null) {
       request.onAnswer(data);
-    } else
-      System.out.println("Ignoring Answer " + id + ": " + data);
+    } else {
+      log("Ignoring Answer " + id + ": " + data);
+    }
   }
 
   private void onDisconnect(Connection c) {
     ConnectionWrapper activeConnection = getActiveConnection();
     if (activeConnection == null)
       for (ConnectionWrapper w : connections)
-        if (w.state == ConnectionState.DISCONNECTED)
+        if (w.state == ConnectionState.DISCONNECTED) {
+          w.state = ConnectionState.TRYCONNECT;
           w.connection.connect();
+        }
   }
 
   private void onConnected(Connection c) {
@@ -151,7 +157,7 @@ public class RpcManagerClient {
           requests.remove(e.getKey());
           return;
         }
-      System.out.println("Warn: Remove a request, that not exist ignored");
+      log("Warn: Remove a request, that not exist ignored");
     }
   };
 
