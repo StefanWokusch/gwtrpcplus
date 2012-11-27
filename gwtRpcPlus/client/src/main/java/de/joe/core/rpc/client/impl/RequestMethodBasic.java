@@ -6,6 +6,8 @@ import com.google.gwt.http.client.RequestCallback;
 import de.joe.core.rpc.client.util.RequestHelper;
 
 public class RequestMethodBasic extends AbstractRequestMethod {
+  // Visible for tests only
+  final static String REQUEST_NAME = "b";
 
   private final String serviceName;
 
@@ -20,7 +22,7 @@ public class RequestMethodBasic extends AbstractRequestMethod {
 
     @Override
     public String getRequestTypeName() {
-      return "b";
+      return REQUEST_NAME;
     }
 
     private BasicRequest(String requestData, RequestCallback callback) {

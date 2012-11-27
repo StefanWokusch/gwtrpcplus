@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 
@@ -83,8 +84,14 @@ public class RpcManagerClient {
         @Override
         public void onDisconnect() {
           if (wrapper.state != ConnectionState.DISCONNECTED) {
+            ConnectionWrapper lastActive = getActiveConnection();
+
             wrapper.state = ConnectionState.DISCONNECTED;
             RpcManagerClient.this.onDisconnect(c);
+
+            if (lastActive != getActiveConnection())
+              for (RpcManagerHandler h : handlers)
+                h.onActiveConnectionChanged(getActiveConnection().connection);
           }
         }
 
@@ -92,8 +99,14 @@ public class RpcManagerClient {
         public void onConnected() {
           assert (wrapper.state == ConnectionState.TRYCONNECT) : "You cant call onconnected when you are "
               + wrapper.state;
+          ConnectionWrapper lastActive = getActiveConnection();
+
           wrapper.state = ConnectionState.CONNECTED;
           RpcManagerClient.this.onConnected(c);
+
+          if (lastActive != getActiveConnection())
+            for (RpcManagerHandler h : handlers)
+              h.onActiveConnectionChanged(getActiveConnection().connection);
         }
       });
       wrapper.state = ConnectionState.TRYCONNECT;
@@ -167,5 +180,27 @@ public class RpcManagerClient {
     return method.call(requestData, requestCallback);
   }
 
+  /**
+   * Handler for state updates
+   */
+  public static interface RpcManagerHandler {
+    void onActiveConnectionChanged(Connection newConnection);
+  }
 
+  private final ArrayList<RpcManagerHandler> handlers = new ArrayList<RpcManagerHandler>();
+
+  public HandlerRegistration addHandler(final RpcManagerHandler handler) {
+    handlers.add(handler);
+    return new HandlerRegistration() {
+      @Override
+      public void removeHandler() {
+        handlers.remove(handler);
+      }
+    };
+  }
+
+  public Connection getCurrentConnection() {
+    ConnectionWrapper c = getActiveConnection();
+    return c == null ? null : c.connection;
+  }
 }

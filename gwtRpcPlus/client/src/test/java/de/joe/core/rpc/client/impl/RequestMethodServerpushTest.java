@@ -79,7 +79,7 @@ public class RequestMethodServerpushTest {
 
     assertEquals(1, allRequests.size());
     assertEquals("testService", allRequests.get(0).getServiceName());
-    assertEquals("reqData", allRequests.get(0).getRequestString());
+    assertEquals("sreqData", allRequests.get(0).getRequestString());
   }
 
   @Test
@@ -88,7 +88,7 @@ public class RequestMethodServerpushTest {
 
     allRequests.get(0).onAnswer("arespData");
 
-    assertEquals("reqData", allRequests.get(0).getRequestString());
+    assertEquals("sreqData", allRequests.get(0).getRequestString());
     verify(callback).onResponseReceived(any(Request.class), any(Response.class));
     assertNotNull(lastResponse);
     assertEquals("respData", lastResponse.getText());
@@ -101,7 +101,7 @@ public class RequestMethodServerpushTest {
 
     allRequests.get(0).onAnswer("frespData");
 
-    assertEquals("reqData", allRequests.get(0).getRequestString());
+    assertEquals("sreqData", allRequests.get(0).getRequestString());
     verify(callback).onResponseReceived(any(Request.class), any(Response.class));
     assertNotNull(lastResponse);
     assertEquals("respData", lastResponse.getText());
@@ -114,7 +114,7 @@ public class RequestMethodServerpushTest {
 
     allRequests.get(0).onAnswer("erespData");
 
-    assertEquals("reqData", allRequests.get(0).getRequestString());
+    assertEquals("sreqData", allRequests.get(0).getRequestString());
     verify(callback).onResponseReceived(any(Request.class), any(Response.class));
     assertNotNull(lastResponse);
     assertEquals("respData", lastResponse.getText());
@@ -140,7 +140,7 @@ public class RequestMethodServerpushTest {
     allRequests.get(0).onAnswer("a2");
     allRequests.get(0).onAnswer("f3");
 
-    assertEquals("reqData", allRequests.get(0).getRequestString());
+    assertEquals("sreqData", allRequests.get(0).getRequestString());
     assertNotNull(lastResponse);
     assertEquals(0, requests.size());
     assertEquals("1", allResponses.get(0));

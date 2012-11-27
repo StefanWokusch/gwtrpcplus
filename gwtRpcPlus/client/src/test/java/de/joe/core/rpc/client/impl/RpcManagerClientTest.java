@@ -151,6 +151,6 @@ public class RpcManagerClientTest {
 
     rpc.call(method, "reqData", requestCallback);
 
-    verify(conMedPrio).send(eq("1#testService#reqData"));
+    verify(conMedPrio).send(eq("1#" + RequestMethodBasic.REQUEST_NAME + "#testService#reqData"));
   }
 }
