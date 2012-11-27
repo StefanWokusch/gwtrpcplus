@@ -1,7 +1,8 @@
 package de.joe.core.rpc.server.impl;
 
 import java.io.IOException;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
 import javax.servlet.ServletException;
@@ -26,11 +27,47 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    if ("true".equals(req.getHeader("longpush")))
+      longpush(req, resp);
+    else
+      request(req, resp);
+  }
+
+  private void longpush(HttpServletRequest req, HttpServletResponse resp) {
+    String clientId = req.getHeader("clientId");
+    if (clientId == null) {
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
+    }
+    ArrayList<String> response = new ArrayList<String>();
+
+    String r = manager.getResponse(clientId, 1, TimeUnit.SECONDS);
+    if (r != null) {
+      // We have a response in the queue, so answer it directly
+      response.add(r);
+      // Add the other Responses queued
+      while ((r = manager.getResponse(clientId)) != null)
+        response.add(r);
+    }
+
+    resp.setStatus(HttpServletResponse.SC_OK);
+    try {
+      for (String re : response) {
+        resp.getWriter().write(re);
+        resp.getWriter().write("\n");
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void request(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     String data = req.getReader().readLine();
 
     String clientId = req.getHeader("clientId");
     if (clientId == null) {
-      clientId = UUID.randomUUID().toString();
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      return;
     }
 
     // String contextPath = req.getContextPath();

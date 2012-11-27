@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -120,5 +121,27 @@ public class RpcManagerServer {
       // }
       // }
     }
+  }
+  
+  public String getResponse(String clientId, long timeout, TimeUnit unit) {
+    BlockingQueue<String> a = answers.get(clientId);
+    try {
+      if (a != null)
+        return a.poll(timeout, unit);
+    } catch (InterruptedException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } finally {
+      // TODO Nicht mehr benötigte Queues aufräumen
+      // if (a.isEmpty()) {
+      // if (answers.remove(clientId, a)) {
+      // // Check for bad removing
+      // if (!a.isEmpty()) {
+      // BlockingQueue<String> a2 = answers.putIfAbsent(clientId, new BlockingArrayQueue<String>());
+      // }
+      // }
+      // }
+    }
+    return null;
   }
 }

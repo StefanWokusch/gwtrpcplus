@@ -12,7 +12,7 @@ import com.google.gwt.http.client.RequestCallback;
 import de.joe.core.rpc.client.Connection.RecieveHandler;
 import de.joe.core.rpc.client.RequestMethod.ConnectionHandler;
 import de.joe.core.rpc.client.RequestMethod.RequestPlus;
-import de.joe.core.rpc.client.impl.ConnectionBasic;
+import de.joe.core.rpc.client.impl.ConnectionHttp;
 import de.joe.core.rpc.client.impl.ConnectionWebsocket;
 
 /**
@@ -29,7 +29,7 @@ public class RpcManagerClient {
           return new ArrayList<Connection>(Arrays.asList(new Connection[]{
               // TODO make configurable
               new ConnectionWebsocket(),//
-              new ConnectionBasic()
+              new ConnectionHttp()
           }));
         }
       });
@@ -100,6 +100,7 @@ public class RpcManagerClient {
   private void onRecieve(String data) {
     if (data.isEmpty())
       return;
+    assert (data.contains("#")) : "Illegal protocol: \"" + data + "\"";
 
     System.out.println("recieve " + data);
 
