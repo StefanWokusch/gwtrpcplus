@@ -9,17 +9,17 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.util.FutureCallback;
-import org.eclipse.jetty.websocket.core.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.core.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.core.annotations.OnWebSocketMessage;
-import org.eclipse.jetty.websocket.core.annotations.WebSocket;
-import org.eclipse.jetty.websocket.core.api.UpgradeRequest;
-import org.eclipse.jetty.websocket.core.api.UpgradeResponse;
-import org.eclipse.jetty.websocket.core.api.WebSocketConnection;
-import org.eclipse.jetty.websocket.server.WebSocketCreator;
-import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
-import org.eclipse.jetty.websocket.server.WebSocketServlet;
+import org.eclipse.jetty.websocket.api.UpgradeRequest;
+import org.eclipse.jetty.websocket.api.UpgradeResponse;
+import org.eclipse.jetty.websocket.api.WebSocketConnection;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.api.extensions.ExtensionConfig;
+import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.inject.Singleton;
@@ -49,16 +49,21 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
   }
 
   @Override
-  public void configure(WebSocketServerFactory factory) {
+  public void configure(WebSocketServletFactory factory) {
     factory.register(GwtRpcPlusWebsocket.class);
     factory.setCreator(new WebSocketCreator() {
       @Override
       public Object createWebSocket(UpgradeRequest req, UpgradeResponse resp) {
+        // Stop Webkit by connecting with deflateFrame because of bug in Jetty 9.0.0.M3
+        for (ExtensionConfig e : req.getExtensions())
+          if (e.getName().equals("x-webkit-deflate-frame"))
+            throw new RuntimeException("Cant support deflate frames");
         return provider.get().init(requests.get());
       }
     });
-    // Fix not working with Jetty 9.0.0-M1 and Chrome 23-25A
-    factory.getExtensionRegistry().unregister("x-webkit-deflate-frame");
+    // Fix failed with a nullpointer exception at Jetty 9.0.0.M3
+    // Fix not working with Jetty 9.0.0.M2 and Chrome 23-25A
+    // factory.getExtensionFactory().unregister("x-webkit-deflate-frame");
   }
 
   @WebSocket
@@ -70,20 +75,6 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
     private WebSocketConnection connection;
     private final RpcManagerServer manager;
     private HandlerRegistration handlerReg;
-
-    // private GwtRpcProcessor.AnswererPlus answerer = new GwtRpcProcessor.AnswererPlus() {
-    // @Override
-    // public void answer(int updateId, String serializedData) {
-    // // System.out.println("answering +"+serializedData);
-    // synchronized (connection) {
-    // try {
-    // connection.write(null, new FutureCallback(), "+" + updateId + "#" + serializedData);
-    // } catch (IOException e) {
-    // logger.error("Exception while Sending Message. This could caused by disconnecting.");
-    // }
-    // }
-    // }
-    // };
 
     @Inject
     public GwtRpcSocket(/* @ShortRunningTasks */ExecutorService executor, RpcManagerServer manager) {
@@ -107,13 +98,14 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
 
     @OnWebSocketMessage
     public void onMessage(final String data) {
+      System.out.println("Recieving " + data);
       if (logger.isTraceEnabled())
         logger.trace("Data recieved: " + data);
       if (!isInit) {
         isInit = true;
         processInit(data);
       } else {
-        processServletCall(data);
+        manager.onCall(clientId, data, permutationStrongName, moduleBasePath);
       }
     }
 
@@ -137,15 +129,13 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
         logger.debug("Client initialized with PermutationStrongName: \"" + permutationStrongName
             + "\" modulBasePath:\"" + moduleBasePath + "\"");
       manager.addHandler(clientId, new AnswerHandler() {
-        @SuppressWarnings({
-            "rawtypes", "unchecked"
-        })
         @Override
         public boolean onAnswer(String answer) {
           if (connection.isOpen()) {
             synchronized (connection) {
               try {
-                connection.write(null, new FutureCallback(), answer);
+                System.out.println("Writing " + answer.length() + "chars: " + answer.substring(0, 10) + "...");
+                connection.write(answer);
               } catch (IOException e) {
                 logger.error("Exception while Sending Message. This could caused by disconnecting.");
               }
@@ -154,46 +144,6 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
           return false;
         }
       });
-    }
-
-    private void processServletCall(String data) {
-      // Hack for Jetty Bug
-      // final ClassLoader oldclassloader = Thread.currentThread().getContextClassLoader();
-      // try {
-      // final String id = data.substring(0, data.indexOf("#"));
-      // data = data.substring(data.indexOf("#") + 1);
-      // final String service = data.substring(0, data.indexOf("#"));
-      // data = data.substring(data.indexOf("#") + 1);
-
-      manager.onCall(clientId, data, permutationStrongName, moduleBasePath);
-
-      // Thread.currentThread().setContextClassLoader(processor.getServletClass(service).getClassLoader());
-
-      // if (request.getContextPath() == null) {
-      // logger.warn("Ignoring ServletCall because of no ContextPath set. This could caused in Serverrestart");
-      // return;
-      // }
-      // String response;
-      // try {
-      // response = id + "#" + processor.process(service, data, request, answerer);
-      // } catch (SerializationException e) {
-      // response = id + "#ERROR: " + e.getMessage();
-      // }
-
-      // if (!isConnected) {
-      // logger.info("Answer not send, because of clients disconnect");
-      // } else {
-      // if (logger.isTraceEnabled())
-      // logger.trace("Data sended  : " + response);
-      // synchronized (connection) {
-      // connection.write(null, new FutureCallback(), response);
-      // }
-      // }
-      // } catch (IOException e) {
-      // logger.error("Exception while Sending Message. This could caused by disconnecting.");
-      // } finally {
-      // Thread.currentThread().setContextClassLoader(oldclassloader);
-      // }
     }
   }
 }

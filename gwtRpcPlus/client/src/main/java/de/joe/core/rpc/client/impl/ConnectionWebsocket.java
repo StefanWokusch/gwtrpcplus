@@ -38,7 +38,6 @@ public class ConnectionWebsocket extends AbstractConnection {
   }
 
   private final Callback callback = new Callback() {
-
     @Override
     public void onOpen() {
       RpcManagerClient.log("Websocket opened");
@@ -58,8 +57,7 @@ public class ConnectionWebsocket extends AbstractConnection {
 
     @Override
     public void onError(Object e) {
-      // TODO Auto-generated method stub
-
+      RpcManagerClient.log("Websocket error");
     }
 
     @Override

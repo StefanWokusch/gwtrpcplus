@@ -76,7 +76,11 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
     } else if (data.startsWith("s")) {
       data = data.substring(1);
       RemoteServiceServlet servlet = helper.getServlet(service);
+
+      // Hack for Jetty Bug
+      final ClassLoader oldclassloader = Thread.currentThread().getContextClassLoader();
       helper.setThreadLocals(servlet, request);
+      Thread.currentThread().setContextClassLoader(servlet.getClass().getClassLoader());
       try {
         final RPCRequest rpcRequest;
         try {
@@ -154,6 +158,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
         return;
       } finally {
         helper.setThreadLocals(servlet, null);
+        Thread.currentThread().setContextClassLoader(oldclassloader);
       }
     } else {
       assert (false) : "Wrong protocol:" + data;

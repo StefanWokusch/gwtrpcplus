@@ -27,18 +27,18 @@ public class ModulGwtRpcPlus extends ServletModule {
 
   @Override
   protected void configureServlets() {
+    // WebsocketConnection
     try {
       Map<String, String> params = new HashMap<String, String>();
       params.put("bufferSize", "100000");
       serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocket.class, params);
-
-      // ConnectionBasic
-      serve("/" + modulename + "/gwtRpcPlusBasic").with(GwtRpcPlusBasicServlet.class);
-
-
     } catch (Throwable e) {
-      logger.error("Ignoring creation the WebSocket-Server. Using HTTP Calls.", e);
+      logger.error("Ignoring creation the WebSocket-Server. Using only HTTP Calls.", e);
     }
+
+    // ConnectionBasic
+    serve("/" + modulename + "/gwtRpcPlusBasic").with(GwtRpcPlusBasicServlet.class);
+
     bind(ServletList.class).toInstance(new ServletList() {
       @Override
       public Set<Class<? extends RemoteServiceServlet>> getServletClasses() {

@@ -26,8 +26,12 @@ public class RequestMethodHandlerBasic implements RequestMethodHandler {
 
   @Override
   public void process(String service, String data, HttpServletRequest request, RequestMethodAnswerer answerer) {
+    // Hack for Jetty Bug
+    final ClassLoader oldclassloader = Thread.currentThread().getContextClassLoader();
+
     RemoteServiceServlet servlet = helper.getServlet(service);
     helper.setThreadLocals(servlet, request);
+    Thread.currentThread().setContextClassLoader(servlet.getClass().getClassLoader());
     try {
       final RPCRequest rpcRequest;
       try {
@@ -46,6 +50,7 @@ public class RequestMethodHandlerBasic implements RequestMethodHandler {
       return;
     } finally {
       helper.setThreadLocals(servlet, null);
+      Thread.currentThread().setContextClassLoader(oldclassloader);
     }
   }
 

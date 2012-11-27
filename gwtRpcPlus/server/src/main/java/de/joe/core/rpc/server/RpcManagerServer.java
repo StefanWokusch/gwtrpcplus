@@ -5,11 +5,10 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
-
-import org.eclipse.jetty.util.BlockingArrayQueue;
 
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.inject.Inject;
@@ -80,7 +79,7 @@ public class RpcManagerServer {
 
     BlockingQueue<String> a = answers.get(clientId);
     if (a == null) {
-      a = new BlockingArrayQueue<String>();
+      a = new LinkedBlockingQueue<String>();
       BlockingQueue<String> a2 = answers.putIfAbsent(clientId, a);
       a = a2 != null ? a2 : a;
     }
@@ -122,7 +121,7 @@ public class RpcManagerServer {
       // }
     }
   }
-  
+
   public String getResponse(String clientId, long timeout, TimeUnit unit) {
     BlockingQueue<String> a = answers.get(clientId);
     try {
