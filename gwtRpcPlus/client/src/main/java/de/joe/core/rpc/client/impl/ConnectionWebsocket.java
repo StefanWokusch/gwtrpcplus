@@ -7,68 +7,78 @@ import de.joe.core.rpc.client.util.Client;
 import de.joe.core.rpc.client.websocket.WebSocket.Callback;
 import de.joe.core.rpc.client.websocket.WebSocketKeepOnline;
 
-
 public class ConnectionWebsocket extends AbstractConnection {
 
-  /**
-   * The websocket keeps connecting itselve, so don't connect while connecting
-   */
-  private boolean connecting = false;
+	/**
+	 * The websocket keeps connecting itselve, so don't connect while connecting
+	 */
+	private boolean connecting = false;
 
-  @Override
-  public void connect() {
-    if (websocket.isSupported() && !connecting) {
-      connecting = true;
-      websocket.connect(GWT.getModuleBaseURL().replace("http:", "ws:").replace("https:", "wss:")
-          + "gwtRpcPlusWebsocket");
-    }
-  }
+	@Override
+	public void connect() {
+		if (websocket.isSupported() && !connecting) {
+			connecting = true;
+			websocket.connect(GWT.getModuleBaseURL().replace("http:", "ws:").replace("https:", "wss:")
+					+ "gwtRpcPlusWebsocket");
+		}
+	}
 
-  @Override
-  public void disconnect() {
-    websocket.disconnect();
-    connecting = false;
-    onDisconnect();
-  }
+	@Override
+	public void disconnect() {
+		websocket.disconnect();
+		connecting = false;
+		onDisconnect();
+	}
 
-  private final WebSocketKeepOnline websocket;
+	private final WebSocketKeepOnline websocket;
 
-  public ConnectionWebsocket() {
-    websocket = new WebSocketKeepOnline(callback);
-  }
+	public ConnectionWebsocket() {
+		websocket = new WebSocketKeepOnline(callback);
+	}
 
-  private final Callback callback = new Callback() {
-    @Override
-    public void onOpen() {
-      RpcManagerClient.log("Websocket opened");
-      websocket.send(Client.id + "#" + GWT.getPermutationStrongName() + "#" + GWT.getModuleBaseURL());
-      try {
-        onConnected();
-      } catch (Throwable e) {
-        // TODO Remove this
-        e.printStackTrace();
-      }
-    }
+	private final Callback callback = new Callback() {
+		@Override
+		public void onOpen() {
+			RpcManagerClient.log("Websocket opened");
+			websocket.send(Client.id + "#" + GWT.getPermutationStrongName() + "#" + GWT.getModuleBaseURL());
+			try {
+				onConnected();
+			} catch (Throwable e) {
+				// TODO Remove this
+				e.printStackTrace();
+			}
+		}
 
-    @Override
-    public void onMessage(String message) {
-      onRecieve(message);
-    }
+		private StringBuffer buffer = new StringBuffer();
 
-    @Override
-    public void onError(Object e) {
-      RpcManagerClient.log("Websocket error");
-    }
+		@Override
+		public void onMessage(String message) {
+//			System.out.println("recieve:" + message.length());
+			buffer.append(message);
+			if (message.endsWith("\n")) {
+//				System.out.println("Finished Message:" + buffer.length());
+				onRecieve(buffer.toString());
 
-    @Override
-    public void onClose() {
-      RpcManagerClient.log("Websocket closed");
-      onDisconnect();
-    }
-  };
+				buffer = new StringBuffer();
+			}
+		}
 
-  @Override
-  public void send(String request) {
-    websocket.send(request);
-  }
+		@Override
+		public void onError(Object e) {
+			RpcManagerClient.log("Websocket error");
+		}
+
+		@Override
+		public void onClose() {
+			RpcManagerClient.log("Websocket closed");
+			onDisconnect();
+			//TODO correct?
+			buffer = new StringBuffer();
+		}
+	};
+
+	@Override
+	public void send(String request) {
+		websocket.send(request);
+	}
 }

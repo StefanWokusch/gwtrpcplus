@@ -2,6 +2,8 @@ package de.joe.core.rpc.server.impl;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -29,121 +31,138 @@ import de.joe.core.rpc.server.RpcManagerServer.AnswerHandler;
 
 @Singleton
 public class GwtRpcPlusWebsocket extends WebSocketServlet {
-  private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-  private final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GwtRpcPlusWebsocket.class);
+	private final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GwtRpcPlusWebsocket.class);
 
-  @Inject
-  private Provider<GwtRpcSocket> provider;
+	@Inject
+	private Provider<GwtRpcSocket> provider;
 
-  private final ThreadLocal<HttpServletRequest> requests = new ThreadLocal<>();
+	private final ThreadLocal<HttpServletRequest> requests = new ThreadLocal<>();
 
-  @Override
-  protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    requests.set(request);
-    try {
-      super.service(request, response);
-    } finally {
-      requests.set(null);
-    }
-  }
+	@Override
+	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		requests.set(request);
+		try {
+			super.service(request, response);
+		} finally {
+			requests.set(null);
+		}
+	}
 
-  @Override
-  public void configure(WebSocketServletFactory factory) {
-    factory.register(GwtRpcPlusWebsocket.class);
-    factory.setCreator(new WebSocketCreator() {
-      @Override
-      public Object createWebSocket(UpgradeRequest req, UpgradeResponse resp) {
-        // Stop Webkit by connecting with deflateFrame because of bug in Jetty 9.0.0.M3
-        for (ExtensionConfig e : req.getExtensions())
-          if (e.getName().equals("x-webkit-deflate-frame"))
-            throw new RuntimeException("Cant support deflate frames");
-        return provider.get().init(requests.get());
-      }
-    });
-    // Fix failed with a nullpointer exception at Jetty 9.0.0.M3
-    // Fix not working with Jetty 9.0.0.M2 and Chrome 23-25A
-    // factory.getExtensionFactory().unregister("x-webkit-deflate-frame");
-  }
+	@Override
+	public void configure(WebSocketServletFactory factory) {
+		factory.register(GwtRpcPlusWebsocket.class);
+		factory.setCreator(new WebSocketCreator() {
+			@Override
+			public Object createWebSocket(UpgradeRequest req, UpgradeResponse resp) {
+				// Stop Webkit by connecting with deflateFrame because of bug in
+				// Jetty 9.0.0.M3 (Completely buggy with chrome)
+				for (ExtensionConfig e : req.getExtensions())
+					if (e.getName().equals("x-webkit-deflate-frame"))
+						throw new RuntimeException("Cant support deflate frames");
+				return provider.get().init(requests.get());
+			}
+		});
+		// factory.getPolicy().setAutoFragment(true);
+		// Fix failed with a nullpointer exception at Jetty 9.0.0.M3
+		// Fix not working with Jetty 9.0.0.M2 and Chrome 23-25A
+		// factory.getExtensionFactory().unregister("x-webkit-deflate-frame");
+	}
 
-  @WebSocket
-  public static class GwtRpcSocket {
-    // private HttpServletRequestGwtRpc request;
-    private String clientId;
-    private String permutationStrongName;
-    private String moduleBasePath;
-    private WebSocketConnection connection;
-    private final RpcManagerServer manager;
-    private HandlerRegistration handlerReg;
+	@WebSocket
+	public static class GwtRpcSocket {
+		// private HttpServletRequestGwtRpc request;
+		private String clientId;
+		private String permutationStrongName;
+		private String moduleBasePath;
+		private WebSocketConnection connection;
+		private ReadWriteLock lock = new ReentrantReadWriteLock();
+		private final RpcManagerServer manager;
+		private HandlerRegistration handlerReg;
 
-    @Inject
-    public GwtRpcSocket(/* @ShortRunningTasks */ExecutorService executor, RpcManagerServer manager) {
-      this.manager = manager;
-    }
+		@Inject
+		public GwtRpcSocket(/* @ShortRunningTasks */ExecutorService executor, RpcManagerServer manager) {
+			this.manager = manager;
+		}
 
-    // @Override
-    public GwtRpcSocket init(HttpServletRequest request) {
-      assert (request != null) : "No Request found";
-      // this.request = new HttpServletRequestGwtRpc(request);
-      return this;
-    }
+		// @Override
+		public GwtRpcSocket init(HttpServletRequest request) {
+			assert (request != null) : "No Request found";
+			// this.request = new HttpServletRequestGwtRpc(request);
+			return this;
+		}
 
-    // @Override
-    @OnWebSocketConnect
-    public void onOpen(WebSocketConnection connection) {
-      if (logger.isInfoEnabled())
-        logger.info("Client connected: " + connection);
-      this.connection = connection;
-    }
+		// @Override
+		@OnWebSocketConnect
+		public void onOpen(WebSocketConnection connection) {
+			if (logger.isInfoEnabled())
+				logger.info("Client connected: " + connection);
+			this.connection = connection;
+		}
 
-    @OnWebSocketMessage
-    public void onMessage(final String data) {
-      System.out.println("Recieving " + data);
-      if (logger.isTraceEnabled())
-        logger.trace("Data recieved: " + data);
-      if (!isInit) {
-        isInit = true;
-        processInit(data);
-      } else {
-        manager.onCall(clientId, data, permutationStrongName, moduleBasePath);
-      }
-    }
+		@OnWebSocketMessage
+		public void onMessage(final String data) {
+//			System.out.println("Recieving " + data);
+			if (logger.isTraceEnabled())
+				logger.trace("Data recieved: " + data);
+			if (!isInit) {
+				isInit = true;
+				processInit(data);
+			} else {
+				manager.onCall(clientId, data, permutationStrongName, moduleBasePath);
+			}
+		}
 
-    // private boolean isConnected = true;
+		// private boolean isConnected = true;
 
-    @OnWebSocketClose
-    public void onClose(int statusCode, String reason) {
-      // isConnected = false;
-      if (logger.isInfoEnabled())
-        logger.info("Client disconnected " + connection + ": " + reason + " (code: " + statusCode + ")");
-      handlerReg.removeHandler();
-    }
+		@OnWebSocketClose
+		public void onClose(int statusCode, String reason) {
+			// isConnected = false;
+			if (logger.isInfoEnabled())
+				logger.info("Client disconnected " + connection + ": " + reason + " (code: " + statusCode + ")");
+			handlerReg.removeHandler();
+		}
 
-    private boolean isInit = false;
+		private boolean isInit = false;
 
-    private void processInit(String data) {
-      clientId = data.substring(0, data.indexOf("#"));
-      permutationStrongName = data.substring(0, data.indexOf("#"));
-      moduleBasePath = data.substring(data.indexOf("#") + 1);
-      if (logger.isDebugEnabled())
-        logger.debug("Client initialized with PermutationStrongName: \"" + permutationStrongName
-            + "\" modulBasePath:\"" + moduleBasePath + "\"");
-      manager.addHandler(clientId, new AnswerHandler() {
-        @Override
-        public boolean onAnswer(String answer) {
-          if (connection.isOpen()) {
-            synchronized (connection) {
-              try {
-                System.out.println("Writing " + answer.length() + "chars: " + answer.substring(0, 10) + "...");
-                connection.write(answer);
-              } catch (IOException e) {
-                logger.error("Exception while Sending Message. This could caused by disconnecting.");
-              }
-            }
-          }
-          return false;
-        }
-      });
-    }
-  }
+		private void processInit(String data) {
+			clientId = data.substring(0, data.indexOf("#"));
+			permutationStrongName = data.substring(0, data.indexOf("#"));
+			moduleBasePath = data.substring(data.indexOf("#") + 1);
+			if (logger.isDebugEnabled())
+				logger.debug("Client initialized with PermutationStrongName: \"" + permutationStrongName
+						+ "\" modulBasePath:\"" + moduleBasePath + "\"");
+			manager.addHandler(clientId, new AnswerHandler() {
+				@Override
+				public boolean onAnswer(String answer) {
+					answer = answer + "\n";
+					if (connection.isOpen()) {
+						lock.writeLock().lock();
+						try {
+//							int maxSendSize = 100;
+//							for (int i = 0; i < answer.length(); i = Math.min(i + maxSendSize, answer.length())) {
+//								String a = answer.substring(i, Math.min(i + maxSendSize, answer.length()));
+//								System.out.println("Writing " + a.length() + "chars: " + a.substring(0, 10) + "...");
+//								Future<SendResult> future = connection.write(a);
+//								System.out.println(".");
+//								future.get();
+//								System.out.println("ok");
+//							}
+						connection.write(answer);
+						} catch (IOException e) {
+							logger.error("Exception while Sending Message. This could caused by disconnecting.");
+//						} catch (InterruptedException e) {
+//							e.printStackTrace();
+//						} catch (ExecutionException e) {
+//							e.printStackTrace();
+						} finally {
+							lock.writeLock().unlock();
+						}
+					}
+					return false;
+				}
+			});
+		}
+	}
 }
