@@ -38,7 +38,8 @@ public class ModulGwtRpcPlus extends ServletModule {
       params.put("bufferSize", "100000");
       serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocket.class, params);
     } catch (Throwable e) {
-      logger.warn("Ignoring creation the WebSocketServlet. Using only HTTP Calls.", e);
+      logger.warn("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception:" + e.getClass().getName()
+          + " :: " + e.getMessage());
       // Serve with dummy, returning a NotImplemented-State
       serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocketDummy.class);
     }
