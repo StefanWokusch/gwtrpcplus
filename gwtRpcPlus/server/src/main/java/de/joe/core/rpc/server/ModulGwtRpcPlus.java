@@ -9,6 +9,7 @@ import com.google.inject.servlet.ServletModule;
 
 import de.joe.core.rpc.server.impl.GwtRpcPlusBasicServlet;
 import de.joe.core.rpc.server.impl.GwtRpcPlusWebsocket;
+import de.joe.core.rpc.server.impl.GwtRpcPlusWebsocketDummy;
 
 public class ModulGwtRpcPlus extends ServletModule {
   private final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ModulGwtRpcPlus.class);
@@ -29,11 +30,17 @@ public class ModulGwtRpcPlus extends ServletModule {
   protected void configureServlets() {
     // WebsocketConnection
     try {
+      // Check for correct Jetty Version
+      Class.forName("org.eclipse.jetty.websocket.server.WebSocketServerFactory");
+
+      // Try adding the WebsocketServlet
       Map<String, String> params = new HashMap<String, String>();
       params.put("bufferSize", "100000");
       serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocket.class, params);
     } catch (Throwable e) {
-      logger.error("Ignoring creation the WebSocket-Server. Using only HTTP Calls.", e);
+      logger.warn("Ignoring creation the WebSocket-Server. Using only HTTP Calls.", e);
+      // Serve with dummy, returning a NotImplemented-State
+      serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocketDummy.class);
     }
 
     // ConnectionBasic
