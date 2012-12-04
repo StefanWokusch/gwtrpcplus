@@ -4,6 +4,7 @@ import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 
 import de.joe.core.rpc.client.util.RequestHelper;
+import de.joe.core.rpc.client.util.UUID;
 
 public class RequestMethodServerpush extends AbstractRequestMethod {
 
@@ -52,8 +53,20 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
   @Override
   public Request call(String requestData, RequestCallback requestCallback) {
-    addRequest(new ServerpushRequest("s" + requestData, requestCallback));
-    return null;
+    final String uuid = UUID.randomUUID();
+    addRequest(new ServerpushRequest("s" + uuid + "#" + requestData, requestCallback));
+    return new Request() {
+      @Override
+      public void cancel() {
+        addRequest(new ServerpushRequest("c" + uuid, null));
+      }
+
+      @Override
+      public boolean isPending() {
+        assert (false) : "Not supported yet";
+        return true;
+      }
+    };
   }
 
   @Override

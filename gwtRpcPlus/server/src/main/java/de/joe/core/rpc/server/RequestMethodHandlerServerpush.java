@@ -1,6 +1,7 @@
 package de.joe.core.rpc.server;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -63,24 +64,43 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
     }
   };
 
+  private static class CancelHandlerWrapper implements CancelHandler {
+    private CancelHandler handler;
 
-  private CancelHandler handler;
+    public void setHandler(CancelHandler handler) {
+      this.handler = handler;
+    }
+
+    @Override
+    public void onCancel() {
+      assert (handler != null) : "No Handler set";
+      handler.onCancel();
+    }
+  }
+
+  private final ConcurrentHashMap<String, CancelHandler> handlers = new ConcurrentHashMap<>();
 
   @Override
   public void process(String service, String data, HttpServletRequest request, final RequestMethodAnswerer answerer) {
-    if (data.startsWith("c")) {
-      // TODO Cancel it
-      handler.onCancel();
-    } else if (data.startsWith("s")) {
+    if (data.startsWith("s")) {
       data = data.substring(1);
-      start(service, data, request, answerer);
+      int splitPoint = data.indexOf("#");
+      String uuid = data.substring(0, splitPoint);
+      data = data.substring(splitPoint + 1);
+      start(uuid, service, data, request, answerer);
+    } else if (data.startsWith("c")) {
+      data = data.substring(1);
+      CancelHandler cancelHandler = handlers.get(data);
+      if (cancelHandler != null)
+        cancelHandler.onCancel();
     } else {
       throw new IllegalArgumentException("Wrong protocol:" + data);
     }
   }
 
   @SuppressWarnings("rawtypes")
-  private void start(String service, String data, HttpServletRequest request, final RequestMethodAnswerer answerer) {
+  private void start(final String uuid, String service, String data, HttpServletRequest request,
+      final RequestMethodAnswerer answerer) {
     RemoteServiceServlet servlet = helper.getServlet(service);
 
     // Hack for Jetty Bug
@@ -115,6 +135,10 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
         params[i] = new ReturnHandler() {
           @Override
           public void answer(Object obj) {
+            if (!handlers.containsKey(uuid)) {
+              // TODO warning?
+              return;// Ignore Answer, already finished
+            }
             try {
               String answer = encoder.encodeResponseForSuccess(rpcRequest.getMethod(), obj,
                   rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
@@ -126,6 +150,10 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
 
           @Override
           public void finish(Object obj) {
+            if (!handlers.containsKey(uuid)) {
+              // TODO warning?
+              return;// Ignore Answer, already finished
+            }
             try {
               String answer = encoder.encodeResponseForSuccess(rpcRequest.getMethod(), obj,
                   rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
@@ -137,6 +165,11 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
 
           @Override
           public void abort(Exception caught) {
+            if (!handlers.containsKey(uuid)) {
+              // TODO warning?
+              return;// Ignore Answer, already finished
+            }
+            handlers.remove(uuid);
             try {
               String answer = encoder.encodeResponseForFailure(rpcRequest.getMethod(), caught,
                   rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
@@ -149,19 +182,15 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
           }
         };
       }
+      CancelHandlerWrapper myCancelHandler = new CancelHandlerWrapper();
+      handlers.put(uuid, myCancelHandler);
       CancelHandler handler = (CancelHandler) toCall.invoke(servlet, params);
 
       if (handler == null)
         throw new IllegalArgumentException("Illegal implementation: " + toNeededMethodString(rpcRequest.getMethod())
             + " returned null");
+      myCancelHandler.setHandler(handler);
 
-      // TODO Send id to cancel?
-      this.handler = handler;
-
-      // String answer = RPC.invokeAndEncodeResponse(servlet, rpcRequest.getMethod(),
-      // rpcRequest.getParameters(),
-      // rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
-      // answerer.send(answer);
     } catch (Throwable e) {
       logger.error("Cant Process Request because of thrown Exception at " + service + " with data " + data + ":", e);
       return;
