@@ -10,9 +10,15 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
   private final String serviceName;
 
-
   public RequestMethodServerpush(String serviceName) {
+    this(serviceName, UUID.get());
+  }
+
+  private final UUID uuidfactory;
+
+  public RequestMethodServerpush(String serviceName, UUID uuidfactory) {
     this.serviceName = serviceName;
+    this.uuidfactory = uuidfactory;
   }
 
   private final class ServerpushRequest implements RequestPlus {
@@ -53,7 +59,7 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
   @Override
   public Request call(String requestData, RequestCallback requestCallback) {
-    final String uuid = UUID.randomUUID();
+    final String uuid = uuidfactory.randomUUID();
     addRequest(new ServerpushRequest("s" + uuid + "#" + requestData, requestCallback));
     return new Request() {
       @Override

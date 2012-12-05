@@ -21,6 +21,7 @@ import com.google.gwt.http.client.Response;
 import de.joe.core.rpc.client.RequestMethod;
 import de.joe.core.rpc.client.RequestMethod.ConnectionHandler;
 import de.joe.core.rpc.client.RequestMethod.RequestPlus;
+import de.joe.core.rpc.client.util.UUID;
 
 public class RequestMethodServerpushTest {
 
@@ -49,6 +50,11 @@ public class RequestMethodServerpushTest {
   Response lastResponse;
   List<String> allResponses;
 
+  @Mock
+  UUID uuid;
+
+  private String id = "uuid1";
+
   @Before
   public void init() {
     MockitoAnnotations.initMocks(this);
@@ -57,7 +63,8 @@ public class RequestMethodServerpushTest {
     allResponses = new ArrayList<>();
     lastRequest = null;
     lastResponse = null;
-    method = new RequestMethodServerpush("testService");
+    when(uuid.randomUUID()).thenReturn(id);
+    method = new RequestMethodServerpush("testService", uuid);
     method.setHandler(handler);
     doAnswer(new Answer<Void>() {
       @Override
@@ -71,6 +78,10 @@ public class RequestMethodServerpushTest {
     }).when(callback).onResponseReceived(any(Request.class), any(Response.class));
   }
 
+  private String createStartData() {
+    return "s" + id + "#" + "reqData";
+  }
+
   @Test
   public void testRequest() {
 
@@ -79,8 +90,9 @@ public class RequestMethodServerpushTest {
 
     assertEquals(1, allRequests.size());
     assertEquals("testService", allRequests.get(0).getServiceName());
-    assertEquals("sreqData", allRequests.get(0).getRequestString());
+    assertEquals(createStartData(), allRequests.get(0).getRequestString());
   }
+
 
   @Test
   public void testSimpleAnswer() {
@@ -88,7 +100,7 @@ public class RequestMethodServerpushTest {
 
     allRequests.get(0).onAnswer("arespData");
 
-    assertEquals("sreqData", allRequests.get(0).getRequestString());
+    assertEquals(createStartData(), allRequests.get(0).getRequestString());
     verify(callback).onResponseReceived(any(Request.class), any(Response.class));
     assertNotNull(lastResponse);
     assertEquals("respData", lastResponse.getText());
@@ -101,7 +113,7 @@ public class RequestMethodServerpushTest {
 
     allRequests.get(0).onAnswer("frespData");
 
-    assertEquals("sreqData", allRequests.get(0).getRequestString());
+    assertEquals(createStartData(), allRequests.get(0).getRequestString());
     verify(callback).onResponseReceived(any(Request.class), any(Response.class));
     assertNotNull(lastResponse);
     assertEquals("respData", lastResponse.getText());
@@ -114,7 +126,7 @@ public class RequestMethodServerpushTest {
 
     allRequests.get(0).onAnswer("erespData");
 
-    assertEquals("sreqData", allRequests.get(0).getRequestString());
+    assertEquals(createStartData(), allRequests.get(0).getRequestString());
     verify(callback).onResponseReceived(any(Request.class), any(Response.class));
     assertNotNull(lastResponse);
     assertEquals("respData", lastResponse.getText());
@@ -140,7 +152,7 @@ public class RequestMethodServerpushTest {
     allRequests.get(0).onAnswer("a2");
     allRequests.get(0).onAnswer("f3");
 
-    assertEquals("sreqData", allRequests.get(0).getRequestString());
+    assertEquals(createStartData(), allRequests.get(0).getRequestString());
     assertNotNull(lastResponse);
     assertEquals(0, requests.size());
     assertEquals("1", allResponses.get(0));

@@ -3,7 +3,13 @@ package de.joe.core.rpc.client.util;
 public class UUID {
   private static final char[] CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
 
-  public static String randomUUID() {
+  private static UUID instance = new UUID();
+
+  public static UUID get() {
+    return instance;
+  }
+
+  public String randomUUID() {
     char[] uuid = new char[36];
     int r;
     uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
