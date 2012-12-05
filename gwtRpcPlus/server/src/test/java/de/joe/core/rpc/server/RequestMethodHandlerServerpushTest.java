@@ -111,11 +111,11 @@ public class RequestMethodHandlerServerpushTest {
   String testData = "data";
 
   String createStartData() {
-    return "s" + testData;
+    return "s" + "uuid1" + "#" + testData;
   }
 
   String createCancelData() {
-    return "c";
+    return "c" + "uuid1";
   }
 
   @Test

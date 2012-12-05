@@ -31,13 +31,14 @@ public class ModulGwtRpcPlus extends ServletModule {
     // WebsocketConnection
     try {
       // Check for correct Jetty Version
-      Class.forName("org.eclipse.jetty.websocket.server.WebSocketServerFactory");
+      // Class.forName("org.eclipse.jetty.websocket.server.WebSocketServerFactory");
 
       // Try adding the WebsocketServlet
       Map<String, String> params = new HashMap<String, String>();
       params.put("bufferSize", "100000");
       serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocket.class, params);
     } catch (Throwable e) {
+      logger.trace("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception", e);
       logger.warn("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception:" + e.getClass().getName()
           + " :: " + e.getMessage());
       // Serve with dummy, returning a NotImplemented-State

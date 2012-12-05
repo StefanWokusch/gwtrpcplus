@@ -44,8 +44,8 @@ public class RpcManagerServer {
     this.requestMethodHandlers.put(push.getRequestTypeName(), push);
   }
 
-  public void onCall(final String clientId, String data, String permStrongName, String reqModuleBasePath) {
-    onCall(clientId, data, new HttpServletRequestGwtRpc("", permStrongName, reqModuleBasePath));
+  public void onCall(final String clientId, String contextPath, String data, String permStrongName, String reqModuleBasePath) {
+    onCall(clientId, data, new HttpServletRequestGwtRpc(contextPath, permStrongName, reqModuleBasePath));
   }
 
   public void onCall(final String clientId, String data, HttpServletRequest req) {

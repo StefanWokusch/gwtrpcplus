@@ -74,7 +74,7 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
     String strongname = req.getHeader(RpcRequestBuilder.STRONG_NAME_HEADER);
     String modulebase = req.getHeader(RpcRequestBuilder.MODULE_BASE_HEADER);
 
-    manager.onCall(clientId, data, strongname, modulebase);
+    manager.onCall(clientId, req.getContextPath(), data, strongname, modulebase);
     // TODO Make async
     String response = manager.getResponse(clientId);
 

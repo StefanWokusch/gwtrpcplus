@@ -7,6 +7,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.websocket.api.UpgradeRequest;
 import org.eclipse.jetty.websocket.api.UpgradeResponse;
@@ -35,6 +38,18 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
   @Inject
   private Provider<GwtRpcSocket> provider;
 
+  private final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
+
+  @Override
+  protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    currentRequest.set(request);
+    try {
+      super.service(request, response);
+    } finally {
+      currentRequest.remove();
+    }
+  }
+
   @Override
   public void configure(WebSocketServletFactory factory) {
     factory.register(GwtRpcPlusWebsocket.class);
@@ -45,7 +60,7 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
         for (ExtensionConfig e : req.getExtensions())
           if (e.getName().equals("x-webkit-deflate-frame"))
             throw new RuntimeException("Cant support deflate frames");
-        return provider.get();
+        return provider.get().init(currentRequest.get().getContextPath());
       }
     });
     // Jetty Bug #395444 https://bugs.eclipse.org/bugs/show_bug.cgi?id=395444
@@ -64,10 +79,16 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
     private ReadWriteLock lock = new ReentrantReadWriteLock();
     private final RpcManagerServer manager;
     private HandlerRegistration handlerReg;
+    private String contextPath;
 
     @Inject
     public GwtRpcSocket(/* @ShortRunningTasks */ExecutorService executor, RpcManagerServer manager) {
       this.manager = manager;
+    }
+
+    public GwtRpcSocket init(String contextPath) {
+      this.contextPath = contextPath;
+      return this;
     }
 
     // @Override
@@ -87,7 +108,7 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
         isInit = true;
         processInit(data);
       } else {
-        manager.onCall(clientId, data, permutationStrongName, moduleBasePath);
+        manager.onCall(clientId, contextPath, data, permutationStrongName, moduleBasePath);
       }
     }
 
@@ -98,7 +119,8 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
       // isConnected = false;
       if (logger.isInfoEnabled())
         logger.info("Client disconnected " + connection + ": " + reason + " (code: " + statusCode + ")");
-      handlerReg.removeHandler();
+      if (handlerReg != null)
+        handlerReg.removeHandler();
     }
 
     private boolean isInit = false;
