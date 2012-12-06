@@ -30,13 +30,7 @@ public class ModulGwtRpcPlus extends ServletModule {
   protected void configureServlets() {
     // WebsocketConnection
     try {
-      // Check for correct Jetty Version
-      // Class.forName("org.eclipse.jetty.websocket.server.WebSocketServerFactory");
-
-      // Try adding the WebsocketServlet
-      Map<String, String> params = new HashMap<String, String>();
-      params.put("bufferSize", "100000");
-      serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocket.class, params);
+      addWebsockets();
     } catch (Throwable e) {
       logger.trace("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception", e);
       logger.warn("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception:" + e.getClass().getName()
@@ -44,7 +38,6 @@ public class ModulGwtRpcPlus extends ServletModule {
       // Serve with dummy, returning a NotImplemented-State
       serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocketDummy.class);
     }
-
     // ConnectionBasic
     serve("/" + modulename + "/gwtRpcPlusBasic").with(GwtRpcPlusBasicServlet.class);
 
@@ -54,5 +47,19 @@ public class ModulGwtRpcPlus extends ServletModule {
         return servletClasses;
       }
     });
+  }
+
+  private void addWebsockets() throws Throwable {
+    // Check for correct Jetty Version
+    if (!getServletContext().getServerInfo().startsWith("jetty/9.")) {
+      throw new RuntimeException("Only supported in jetty 9 yet (working since jetty 9.0.0.M3), but was "
+          + getServletContext().getServerInfo());
+
+    }
+
+    // Try adding the WebsocketServlet
+    Map<String, String> params = new HashMap<String, String>();
+    params.put("bufferSize", "100000");
+    serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocket.class, params);
   }
 }
