@@ -150,6 +150,7 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
               // future.get();
               // System.out.println("ok");
               // }
+//              System.out.println("send: "+answer);
               connection.write(answer);
             } catch (IOException e) {
               logger.error("Exception while Sending Message. This could caused by disconnecting.");

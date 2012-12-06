@@ -3,10 +3,21 @@
 	<inherits name='com.google.gwt.user.User' />
 	<inherits name='com.google.gwt.rpc.RPC' />
 	<inherits name='de.joe.core.GwtRpcPlusServer' />
-	
+
 	<source path='rpc/client' />
 
 	<generate-with class="de.joe.core.rpc.rebind.RpcServiceGenerator">
 		<when-type-assignable class="com.google.gwt.user.client.rpc.RemoteService" />
 	</generate-with>
+
+	<generate-with class="de.joe.core.rpc.rebind.ConnectionProviderGenerator">
+		<when-type-assignable class="de.joe.core.rpc.client.ConnectionProvider" />
+	</generate-with>
+
+
+	<define-configuration-property name="gwtrpcplus_websockets_enabled"
+		is-multi-valued="false" />
+	<set-configuration-property name="gwtrpcplus_websockets_enabled"
+		value="false" />
+
 </module>

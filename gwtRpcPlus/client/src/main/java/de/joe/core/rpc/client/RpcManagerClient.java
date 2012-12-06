@@ -1,11 +1,11 @@
 package de.joe.core.rpc.client;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
@@ -13,8 +13,6 @@ import com.google.gwt.http.client.RequestCallback;
 import de.joe.core.rpc.client.Connection.RecieveHandler;
 import de.joe.core.rpc.client.RequestMethod.ConnectionHandler;
 import de.joe.core.rpc.client.RequestMethod.RequestPlus;
-import de.joe.core.rpc.client.impl.ConnectionHttp;
-import de.joe.core.rpc.client.impl.ConnectionWebsocket;
 
 /**
  * Api the proxies will call
@@ -28,16 +26,7 @@ public class RpcManagerClient {
 
   public static RpcManagerClient get() {
     if (instance == null)
-      instance = new RpcManagerClient(new ConnectionProvider() {
-        @Override
-        public List<Connection> get() {
-          return new ArrayList<Connection>(Arrays.asList(new Connection[]{
-              // TODO make configurable
-              new ConnectionWebsocket(),//
-              new ConnectionHttp()
-          }));
-        }
-      });
+      instance = new RpcManagerClient((ConnectionProvider) GWT.create(ConnectionProvider.class));
     return instance;
   }
 
