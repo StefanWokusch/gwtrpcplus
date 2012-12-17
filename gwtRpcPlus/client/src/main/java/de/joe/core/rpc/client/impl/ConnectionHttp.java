@@ -22,6 +22,11 @@ public class ConnectionHttp extends AbstractConnection {
    */
   private boolean serverCurrentlyPending = false;
 
+
+  public boolean isPolling() {
+    return serverCurrentlyPending;
+  }
+
   /**
    * true when Response of the Server is expected
    */
@@ -37,7 +42,7 @@ public class ConnectionHttp extends AbstractConnection {
     if (requestsPending && connnected && !serverCurrentlyPending && callbacksPending == 0)
       try {
         serverCurrentlyPending = true;
-//        System.out.println("Sending longpoll");
+        // System.out.println("Sending longpoll");
         longPushService.sendRequest("", longPushCallback);
       } catch (RequestException e) {
         e.printStackTrace();
@@ -68,7 +73,7 @@ public class ConnectionHttp extends AbstractConnection {
   private final RequestCallback longPushCallback = new RequestCallback() {
     @Override
     public void onResponseReceived(Request request, Response response) {
-//      System.out.println("recieved longpoll");
+      // System.out.println("recieved longpoll");
       serverCurrentlyPending = false;
 
       if (response.getStatusCode() != Response.SC_OK) {
@@ -136,6 +141,5 @@ public class ConnectionHttp extends AbstractConnection {
       e.printStackTrace();
     }
   }
-
 
 }

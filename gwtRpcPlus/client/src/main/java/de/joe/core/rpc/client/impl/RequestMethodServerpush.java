@@ -59,7 +59,7 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
     @Override
     public boolean onTimeout() {
-      // FIXME timeout handling?
+      // FIXME timeout handling with allowResend?
       removeRequest(this);
       callback.onError(null, new StatusCodeException(408,// Request timeout
           "The Request timed out."));
@@ -70,6 +70,7 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
   @Override
   public Request call(String requestData, RequestCallback requestCallback) {
+    assert (requestCallback != null);
     final String uuid = uuidfactory.randomUUID();
     addRequest(new ServerpushRequest("s" + uuid + "#" + requestData, requestCallback));
     return new Request() {

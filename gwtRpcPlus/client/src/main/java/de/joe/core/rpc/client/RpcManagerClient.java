@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -241,9 +242,11 @@ public class RpcManagerClient {
   /**
    * Called when no Answer recieved. This ca
    */
+  @SuppressWarnings("unchecked")
   protected void onTimeout() {
     boolean pending = false;
-    for (Entry<String, RequestPlus> request : requests.entrySet()) {
+    Set<Entry<String, RequestPlus>> entrySet = requests.entrySet();
+    for (Entry<String, RequestPlus> request : entrySet.toArray(new Entry[entrySet.size()])) {
       boolean resend = request.getValue().onTimeout();
       if (resend) {
         pending = true;
