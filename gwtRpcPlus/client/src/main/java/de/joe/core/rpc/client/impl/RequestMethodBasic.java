@@ -12,9 +12,11 @@ public class RequestMethodBasic extends AbstractRequestMethod {
 
   private final String serviceName;
 
+  private final boolean resendAllowed;
 
-  public RequestMethodBasic(String serviceName) {
+  public RequestMethodBasic(String serviceName, boolean resendAllowed) {
     this.serviceName = serviceName;
+    this.resendAllowed = resendAllowed;
   }
 
   private final class BasicRequest implements RequestPlus {
@@ -47,9 +49,19 @@ public class RequestMethodBasic extends AbstractRequestMethod {
       if (answer.startsWith("+")) {
         RequestHelper.process(callback, answer.substring(1));
       } else {
-        callback.onError(null, new StatusCodeException(500,
+        callback.onError(null, new StatusCodeException(500,// Internal ServerException
             "An Interal Serverexception was thrown. Look at the Serverlog for details"));
       }
+    }
+
+    @Override
+    public boolean onTimeout() {
+      if (!resendAllowed) {
+        removeRequest(this);
+        callback.onError(null, new StatusCodeException(408,// Request timeout
+            "The Request timed out."));
+      }
+      return resendAllowed;
     }
   }
 

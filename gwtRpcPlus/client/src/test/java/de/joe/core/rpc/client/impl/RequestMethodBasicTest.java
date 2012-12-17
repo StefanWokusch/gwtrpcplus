@@ -47,7 +47,7 @@ public class RequestMethodBasicTest {
     MockitoAnnotations.initMocks(this);
     allRequests = new ArrayList<>();
     requests = new ArrayList<>();
-    method = new RequestMethodBasic("testService");
+    method = new RequestMethodBasic("testService", true);
     method.setHandler(handler);
   }
 
@@ -66,7 +66,7 @@ public class RequestMethodBasicTest {
   public void testAnswer() {
     method.call("reqData", callback);
 
-    allRequests.get(0).onAnswer("respData");
+    allRequests.get(0).onAnswer("+respData");
 
     verify(callback).onResponseReceived(any(Request.class), any(Response.class));
   }

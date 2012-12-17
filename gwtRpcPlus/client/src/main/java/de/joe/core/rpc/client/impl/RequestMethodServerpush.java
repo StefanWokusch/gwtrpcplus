@@ -55,6 +55,12 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
       }
       RequestHelper.process(callback, answer);
     }
+
+    @Override
+    public boolean onTimeout() {
+      //FIXME timeout handling?
+      return false;
+    }
   }
 
   @Override

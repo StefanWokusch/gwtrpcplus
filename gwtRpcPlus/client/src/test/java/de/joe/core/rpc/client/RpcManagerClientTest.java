@@ -69,6 +69,12 @@ public class RpcManagerClientTest {
     public void onAnswer(String answer) {
       lastAnswer = answer;
     }
+
+    @Override
+    public boolean onTimeout() {
+      // Resend allowed
+      return true;
+    }
   }
 
   // Initialization

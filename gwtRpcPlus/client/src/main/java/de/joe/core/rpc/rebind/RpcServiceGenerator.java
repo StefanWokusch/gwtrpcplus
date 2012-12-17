@@ -13,6 +13,7 @@ import de.joe.core.rpc.client.RequestMethod;
 import de.joe.core.rpc.client.impl.GwtRpcProxy;
 import de.joe.core.rpc.client.impl.RequestMethodBasic;
 import de.joe.core.rpc.client.impl.RequestMethodServerpush;
+import de.joe.core.rpc.shared.ResendAllowed;
 import de.joe.core.rpc.shared.ServerPush;
 
 /**
@@ -47,7 +48,8 @@ public class RpcServiceGenerator extends ServiceInterfaceProxyGenerator {
               + "(\"" + serviceIntf.getSimpleSourceName() + "\"));");
         else
           srcWriter.println("methods.put(\"" + m.getName() + "\", new " + RequestMethodBasic.class.getName() + "(\""
-              + serviceIntf.getSimpleSourceName() + "\"));");
+              + serviceIntf.getSimpleSourceName() + "\", "
+              + (m.isAnnotationPresent(ResendAllowed.class) ? "true" : "false") + "));");
       }
       srcWriter.outdent();
       srcWriter.println("}");

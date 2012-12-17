@@ -40,7 +40,7 @@ public class RpcManagerClientConnectionsTest {
   RecieveHandler conHandlerLowPrio;
 
   RpcManagerClient rpc;
-  RequestMethod method = new RequestMethodBasic("testService");
+  RequestMethod method = new RequestMethodBasic("testService", true);
 
   @Mock
   RequestCallback requestCallback;

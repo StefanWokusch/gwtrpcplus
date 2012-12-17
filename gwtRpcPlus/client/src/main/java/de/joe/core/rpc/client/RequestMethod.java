@@ -27,6 +27,13 @@ public interface RequestMethod {
     void onAnswer(String answer);
 
     /**
+     * Called when no Answer arrived from the server.
+     * 
+     * @return true when the Request should be resend
+     */
+    boolean onTimeout();
+
+    /**
      * @return a unique name for the Method, matching to some RequestMethodHandler on the Serverside
      */
     String getRequestTypeName();
