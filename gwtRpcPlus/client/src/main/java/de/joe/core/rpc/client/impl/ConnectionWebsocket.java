@@ -81,4 +81,9 @@ public class ConnectionWebsocket extends AbstractConnection {
 	public void send(String request) {
 		websocket.send(request);
 	}
+	
+	@Override
+	public void setPending(boolean pending) {
+	  // No need in websockets, its supported in the websockets inner-protocoll automatically
+	}
 }

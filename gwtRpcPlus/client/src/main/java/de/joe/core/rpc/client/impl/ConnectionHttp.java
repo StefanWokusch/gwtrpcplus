@@ -12,20 +12,49 @@ import de.joe.core.rpc.client.util.Client;
 
 public class ConnectionHttp extends AbstractConnection {
 
+  /**
+   * Thue when the BasicConnectino should be used
+   */
   private boolean connnected = false;
 
-  private boolean pending = false;
+  /**
+   * true when the Serverpush-request is pending
+   */
+  private boolean serverCurrentlyPending = false;
 
-  @Override
-  public void connect() {
-    connnected = true;
-    if (!pending)
+  /**
+   * true when Response of the Server is expected
+   */
+  private boolean requestsPending = false;
+
+  /**
+   * Amount of pending simple Callbacks (they can get multiple responses, so no serverpolling is
+   * needed)
+   */
+  private int callbacksPending = 0;
+
+  private void updateServerPush() {
+    if (requestsPending && connnected && !serverCurrentlyPending && callbacksPending == 0)
       try {
-        pending = true;
+        serverCurrentlyPending = true;
+//        System.out.println("Sending longpoll");
         longPushService.sendRequest("", longPushCallback);
       } catch (RequestException e) {
         e.printStackTrace();
       }
+  }
+
+  @Override
+  public void setPending(boolean pending) {
+    this.requestsPending = pending;
+    updateServerPush();
+  }
+
+
+  @Override
+  public void connect() {
+    connnected = true;
+    updateServerPush();
     // Always connected
     onConnected();
   }
@@ -39,31 +68,29 @@ public class ConnectionHttp extends AbstractConnection {
   private final RequestCallback longPushCallback = new RequestCallback() {
     @Override
     public void onResponseReceived(Request request, Response response) {
-      pending = false;
+//      System.out.println("recieved longpoll");
+      serverCurrentlyPending = false;
 
-      if (response.getStatusCode() != Response.SC_OK)
-        System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
-      else {
+      if (response.getStatusCode() != Response.SC_OK) {
+        if (response.getStatusCode() != 0)// Ignore 0 (called by server don't responsed)
+          System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
+      } else {
         String[] resp = response.getText().split("\n");
         for (String res : resp)
           if (!res.isEmpty())
             onRecieve(res);
       }
 
-      if (connnected) {
-        try {
-          pending = true;
-          longPushService.sendRequest("", longPushCallback);
-        } catch (RequestException e) {
-          e.printStackTrace();
-        }
-      }
+      updateServerPush();
     }
 
     @Override
     public void onError(Request request, Throwable exception) {
-      // TODO Auto-generated method stub
+      System.err.println("Error at the HTTPConnections longpoll");
+      exception.printStackTrace();
 
+      serverCurrentlyPending = false;
+      updateServerPush();
     }
   };
 
@@ -74,12 +101,18 @@ public class ConnectionHttp extends AbstractConnection {
         System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
       else
         onRecieve(response.getText());
+
+      callbacksPending--;
+      updateServerPush();
     }
 
     @Override
     public void onError(Request request, Throwable exception) {
-      // TODO Auto-generated method stub
+      System.err.println("Error at the HTTPConnections callback");
+      exception.printStackTrace();
 
+      callbacksPending--;
+      updateServerPush();
     }
   };
 
@@ -98,9 +131,11 @@ public class ConnectionHttp extends AbstractConnection {
   public void send(String request) {
     try {
       service.sendRequest(request, callback);
+      callbacksPending++;
     } catch (RequestException e) {
       e.printStackTrace();
     }
   }
+
 
 }

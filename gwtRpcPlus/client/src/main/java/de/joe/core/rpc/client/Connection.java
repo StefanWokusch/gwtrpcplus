@@ -46,4 +46,14 @@ public interface Connection {
    * @param request request to send
    */
   void send(String request);
+
+  /**
+   * Called when responses are expected. For example at serverpush-requests waiting for more
+   * Responses.
+   * 
+   * This is an indicator for example for Longpolling, to keep a connection to the Server.
+   * 
+   * @param pending true when responses are expected
+   */
+  void setPending(boolean pending);
 }

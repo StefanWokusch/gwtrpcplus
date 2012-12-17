@@ -50,6 +50,12 @@ public class RpcManagerClientTest {
   String lastAnswer = null;
 
   private class TestRequest implements RequestPlus {
+    private final boolean resend;
+
+    public TestRequest(boolean resend) {
+      this.resend = resend;
+    }
+
     @Override
     public String getRequestTypeName() {
       return "t";
@@ -72,8 +78,7 @@ public class RpcManagerClientTest {
 
     @Override
     public boolean onTimeout() {
-      // Resend allowed
-      return true;
+      return resend;
     }
   }
 
@@ -119,7 +124,7 @@ public class RpcManagerClientTest {
 
   @Test
   public void simpleAnswer() {
-    TestRequest request = new TestRequest();
+    TestRequest request = new TestRequest(true);
     methodHandler.addRequest(request);
 
     connectionHandler.onRecieve("1#answer");
@@ -130,7 +135,7 @@ public class RpcManagerClientTest {
 
   @Test
   public void removeRequest() {
-    TestRequest request = new TestRequest();
+    TestRequest request = new TestRequest(true);
     methodHandler.addRequest(request);
 
     connectionHandler.onRecieve("1#answer");
@@ -141,8 +146,27 @@ public class RpcManagerClientTest {
   }
 
   @Test
-  public void noResponse_resend() {
-    TestRequest request = new TestRequest();
+  public void setPending_true() {
+    TestRequest request = new TestRequest(true);
+    methodHandler.addRequest(request);
+
+    verify(connection).setPending(true);
+  }
+
+  @Test
+  public void setPending_false() {
+    TestRequest request = new TestRequest(true);
+    methodHandler.addRequest(request);
+    verify(connection).setPending(true);
+
+    methodHandler.removeRequest(request);
+
+    verify(connection).setPending(false);
+  }
+
+  @Test
+  public void noResponse_resendAllowed_resend() {
+    TestRequest request = new TestRequest(true);
     methodHandler.addRequest(request);
 
     rpc.onTimeout();
@@ -151,8 +175,18 @@ public class RpcManagerClientTest {
   }
 
   @Test
+  public void noResponse_resendNotAllowed_noRresend() {
+    TestRequest request = new TestRequest(false);
+    methodHandler.addRequest(request);
+
+    rpc.onTimeout();
+
+    verify(connection, times(1)).send(anyString());
+  }
+
+  @Test
   public void timeoutHandler_withPending_fire() {
-    TestRequest request = new TestRequest();
+    TestRequest request = new TestRequest(true);
     methodHandler.addRequest(request);
 
     rpc.onTimeout();
@@ -162,7 +196,7 @@ public class RpcManagerClientTest {
 
   @Test
   public void timeoutHandler_withoutPending_dontfire() {
-    TestRequest request = new TestRequest();
+    TestRequest request = new TestRequest(true);
     methodHandler.addRequest(request);
     methodHandler.removeRequest(request);
 
@@ -170,6 +204,5 @@ public class RpcManagerClientTest {
 
     verify(rpcHandler, times(0)).onTimeout();
   }
-
 
 }

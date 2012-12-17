@@ -167,6 +167,7 @@ public class RpcManagerClient {
       String id = "" + (currentId++);
       requests.put(id, request);
       send(id, request);
+      checkPending();
     }
 
     @Override
@@ -225,11 +226,13 @@ public class RpcManagerClient {
    * Called when no Answer recieved. This ca
    */
   protected void onTimeout() {
-    // TODO Resend allowed?
     boolean pending = false;
     for (Entry<String, RequestPlus> request : requests.entrySet()) {
-      pending = true;
-      send(request.getKey(), request.getValue());
+      boolean resend = request.getValue().onTimeout();
+      if (resend) {
+        pending = true;
+        send(request.getKey(), request.getValue());
+      }
     }
 
     if (pending)
@@ -238,9 +241,9 @@ public class RpcManagerClient {
   }
 
   private void checkPending() {
-    if (isAnyRequestPending()) {
-
-    }
+    boolean anyRequestPending = isAnyRequestPending();
+    for (ConnectionWrapper c : connections)
+      c.connection.setPending(anyRequestPending);
   }
 
   private boolean isAnyRequestPending() {
