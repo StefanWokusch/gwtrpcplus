@@ -2,6 +2,7 @@ package de.joe.core.rpc.client.impl;
 
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.user.client.rpc.StatusCodeException;
 
 import de.joe.core.rpc.client.util.RequestHelper;
 
@@ -43,7 +44,12 @@ public class RequestMethodBasic extends AbstractRequestMethod {
     @Override
     public void onAnswer(String answer) {
       removeRequest(this);
-      RequestHelper.process(callback, answer);
+      if (answer.startsWith("+")) {
+        RequestHelper.process(callback, answer.substring(1));
+      } else {
+        callback.onError(null, new StatusCodeException(500,
+            "An Interal Serverexception was thrown. Look at the Serverlog for details"));
+      }
     }
   }
 

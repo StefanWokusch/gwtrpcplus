@@ -26,12 +26,12 @@ public class RequestMethodHandlerBasic implements RequestMethodHandler {
 
   @Override
   public void process(String service, String data, HttpServletRequest request, RequestMethodAnswerer answerer) {
-//    // Hack for Jetty Bug
-//    final ClassLoader oldclassloader = Thread.currentThread().getContextClassLoader();
+    // // Hack for Jetty Bug
+    // final ClassLoader oldclassloader = Thread.currentThread().getContextClassLoader();
 
     RemoteServiceServlet servlet = helper.getServlet(service);
     helper.setThreadLocals(servlet, request);
-//    Thread.currentThread().setContextClassLoader(servlet.getClass().getClassLoader());
+    // Thread.currentThread().setContextClassLoader(servlet.getClass().getClassLoader());
     try {
       final RPCRequest rpcRequest;
       try {
@@ -44,13 +44,14 @@ public class RequestMethodHandlerBasic implements RequestMethodHandler {
       }
       String answer = RPC.invokeAndEncodeResponse(servlet, rpcRequest.getMethod(), rpcRequest.getParameters(),
           rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
-      answerer.send(answer);
+      answerer.send("+" + answer);
     } catch (Throwable e) {
-      logger.error("Cant Process Request because of thrown Exception at " + service + " with data " + data + ":", e);
+      logger.error("Can't Process Request because of thrown Exception at " + service + " with data " + data + ":", e);
+      answerer.send("-");
       return;
     } finally {
       helper.setThreadLocals(servlet, null);
-//      Thread.currentThread().setContextClassLoader(oldclassloader);
+      // Thread.currentThread().setContextClassLoader(oldclassloader);
     }
   }
 
