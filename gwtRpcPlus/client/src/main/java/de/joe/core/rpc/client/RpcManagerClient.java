@@ -13,6 +13,7 @@ import com.google.gwt.http.client.RequestCallback;
 import de.joe.core.rpc.client.Connection.RecieveHandler;
 import de.joe.core.rpc.client.RequestMethod.ConnectionHandler;
 import de.joe.core.rpc.client.RequestMethod.RequestPlus;
+import de.joe.core.rpc.client.util.MyTimer;
 
 /**
  * Api the proxies will call
@@ -22,6 +23,20 @@ public class RpcManagerClient {
 
   public static void log(String text) {
     // GWT.log(text);
+  }
+
+  protected MyTimer timer;
+
+  private void schedule() {
+    if (timer == null) {
+      timer = new MyTimer.DefaultTimer() {
+        @Override
+        public void fire() {
+          onTimeout();
+        }
+      };
+    }
+    timer.schedule();
   }
 
   public static RpcManagerClient get() {
@@ -104,11 +119,13 @@ public class RpcManagerClient {
   }
 
   private void send(String request) {
+    schedule();
     ConnectionWrapper con = getActiveConnection();
     con.connection.send(request);
   }
 
   private void onRecieve(String data) {
+    schedule();
     final String id = data.substring(0, data.indexOf("#"));
     data = data.substring(data.indexOf("#") + 1);
 
@@ -149,7 +166,7 @@ public class RpcManagerClient {
     public void addRequest(RequestPlus request) {
       String id = "" + (currentId++);
       requests.put(id, request);
-      send(id + "#" + request.getRequestTypeName() + "#" + request.getServiceName() + "#" + request.getRequestString());
+      send(id, request);
     }
 
     @Override
@@ -157,6 +174,7 @@ public class RpcManagerClient {
       for (Entry<String, RequestPlus> e : requests.entrySet())
         if (e.getValue() == request) {
           requests.remove(e.getKey());
+          checkPending();
           return;
         }
       log("Warn: Remove a request, that not exist ignored");
@@ -164,9 +182,13 @@ public class RpcManagerClient {
   };
 
   public Request call(RequestMethod method, String requestData, RequestCallback requestCallback) {
-    method.setHandler(handler);
+    register(method);
     // TODO Remove this method and replace calls directly to the methods?
     return method.call(requestData, requestCallback);
+  }
+
+  protected void register(RequestMethod method) {
+    method.setHandler(handler);
   }
 
   /**
@@ -174,6 +196,8 @@ public class RpcManagerClient {
    */
   public static interface RpcManagerHandler {
     void onActiveConnectionChanged(Connection newConnection);
+
+    void onTimeout();
   }
 
   private final ArrayList<RpcManagerHandler> handlers = new ArrayList<RpcManagerHandler>();
@@ -192,4 +216,36 @@ public class RpcManagerClient {
     ConnectionWrapper c = getActiveConnection();
     return c == null ? null : c.connection;
   }
+
+  private void send(String id, RequestPlus request) {
+    send(id + "#" + request.getRequestTypeName() + "#" + request.getServiceName() + "#" + request.getRequestString());
+  }
+
+  /**
+   * Called when no Answer recieved. This ca
+   */
+  protected void onTimeout() {
+    // TODO Resend allowed?
+    boolean pending = false;
+    for (Entry<String, RequestPlus> request : requests.entrySet()) {
+      pending = true;
+      send(request.getKey(), request.getValue());
+    }
+
+    if (pending)
+      for (RpcManagerHandler handler : handlers)
+        handler.onTimeout();
+  }
+
+  private void checkPending() {
+    if (isAnyRequestPending()) {
+
+    }
+  }
+
+  private boolean isAnyRequestPending() {
+    return !requests.isEmpty();
+  }
+
+
 }

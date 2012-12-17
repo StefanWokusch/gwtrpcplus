@@ -7,7 +7,7 @@ import de.joe.core.rpc.client.util.RequestHelper;
 
 public class RequestMethodBasic extends AbstractRequestMethod {
   // Visible for tests only
-  final static String REQUEST_NAME = "b";
+  public final static String REQUEST_NAME = "b";
 
   private final String serviceName;
 
