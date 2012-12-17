@@ -82,6 +82,9 @@ public class RpcManagerClient {
           assert (data.contains("#")) : "Illegal protocol: \"" + data + "\"";
           log("recieve from " + c.getClass() + " " + (data.length() <= 100 ? data : data.subSequence(0, 100)));
 
+          for (RpcManagerHandler handler : handlers)
+            handler.onResponse();
+
           RpcManagerClient.this.onRecieve(data);
         }
 
@@ -196,8 +199,21 @@ public class RpcManagerClient {
    * Handler for state updates
    */
   public static interface RpcManagerHandler {
+    /**
+     * Called when the currentConnection changed (like websockets connected)
+     * 
+     * @param newConnection the new and now active Connection
+     */
     void onActiveConnectionChanged(Connection newConnection);
 
+    /**
+     * Called when some Response recieved
+     */
+    void onResponse();
+
+    /**
+     * Called when some Responses of the Server are expected, but it timedout
+     */
     void onTimeout();
   }
 

@@ -185,6 +185,16 @@ public class RpcManagerClientTest {
   }
 
   @Test
+  public void responseHandler_fire() {
+    TestRequest request = new TestRequest(true);
+    methodHandler.addRequest(request);
+
+    connectionHandler.onRecieve("1#answer");
+
+    verify(rpcHandler, times(1)).onResponse();
+  }
+
+  @Test
   public void timeoutHandler_withPending_fire() {
     TestRequest request = new TestRequest(true);
     methodHandler.addRequest(request);
