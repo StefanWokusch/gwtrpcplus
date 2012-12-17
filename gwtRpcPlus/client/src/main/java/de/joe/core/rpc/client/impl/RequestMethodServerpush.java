@@ -2,6 +2,7 @@ package de.joe.core.rpc.client.impl;
 
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.user.client.rpc.StatusCodeException;
 
 import de.joe.core.rpc.client.util.RequestHelper;
 import de.joe.core.rpc.client.util.UUID;
@@ -58,7 +59,11 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
     @Override
     public boolean onTimeout() {
-      //FIXME timeout handling?
+      // FIXME timeout handling?
+      removeRequest(this);
+      callback.onError(null, new StatusCodeException(408,// Request timeout
+          "The Request timed out."));
+
       return false;
     }
   }
@@ -79,11 +84,6 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
         return true;
       }
     };
-  }
-
-  @Override
-  public void onResendAll() {
-    // TODO Auto-generated method stub
   }
 
 }

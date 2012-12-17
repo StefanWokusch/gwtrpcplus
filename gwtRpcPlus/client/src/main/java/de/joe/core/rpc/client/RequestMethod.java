@@ -70,10 +70,4 @@ public interface RequestMethod {
    * @return Request to cancle the request (if supported)
    */
   Request call(String requestData, RequestCallback requestCallback);
-
-  /**
-   * You should call send for all pending requests that allowes it
-   */
-  void onResendAll();
-
 }

@@ -71,9 +71,4 @@ public class RequestMethodBasic extends AbstractRequestMethod {
     return null;
   }
 
-  @Override
-  public void onResendAll() {
-    // TODO Auto-generated method stub
-  }
-
 }
