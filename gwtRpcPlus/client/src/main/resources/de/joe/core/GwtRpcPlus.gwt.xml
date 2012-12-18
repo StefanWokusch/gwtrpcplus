@@ -10,6 +10,8 @@
 		<when-type-assignable class="com.google.gwt.user.client.rpc.RemoteService" />
 	</generate-with>
 
+
+
 	<generate-with class="de.joe.core.rpc.rebind.ConnectionProviderGenerator">
 		<when-type-assignable class="de.joe.core.rpc.client.ConnectionProvider" />
 	</generate-with>
@@ -20,4 +22,17 @@
 	<set-configuration-property name="gwtrpcplus_websockets_enabled"
 		value="false" />
 
+	<define-configuration-property name="gwtrpcplus_websockets_NoRemoveService"
+		is-multi-valued="false" />
+	<set-configuration-property name="gwtrpcplus_websockets_NoRemoveService"
+		value="false" />
+
+
+	<generate-with class="de.joe.core.rpc.rebind.RpcServiceGenerator">
+		<when-type-assignable class="de.joe.core.rpc.shared.RemoteServicePlus" />
+	</generate-with>
+
+	<generate-with class="de.joe.core.rpc.rebind.RpcServiceGenerator">
+		<when-type-assignable class="de.joe.core.rpc.shared.RemoteServicePlus" />
+	</generate-with>
 </module>

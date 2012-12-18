@@ -2,6 +2,12 @@ package de.joe.core.rpc.rebind;
 
 import java.util.HashMap;
 
+import com.google.gwt.core.ext.BadPropertyValueException;
+import com.google.gwt.core.ext.GeneratorContext;
+import com.google.gwt.core.ext.RebindResult;
+import com.google.gwt.core.ext.TreeLogger;
+import com.google.gwt.core.ext.UnableToCompleteException;
+import com.google.gwt.core.ext.TreeLogger.Type;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JMethod;
 import com.google.gwt.user.client.rpc.impl.RemoteServiceProxy;
@@ -13,6 +19,7 @@ import de.joe.core.rpc.client.RequestMethod;
 import de.joe.core.rpc.client.impl.GwtRpcProxy;
 import de.joe.core.rpc.client.impl.RequestMethodBasic;
 import de.joe.core.rpc.client.impl.RequestMethodServerpush;
+import de.joe.core.rpc.shared.RemoteServicePlus;
 import de.joe.core.rpc.shared.ResendAllowed;
 import de.joe.core.rpc.shared.ServerPush;
 
@@ -22,7 +29,30 @@ import de.joe.core.rpc.shared.ServerPush;
 public class RpcServiceGenerator extends ServiceInterfaceProxyGenerator {
   @Override
   protected ProxyCreator createProxyCreator(JClassType remoteService) {
-    return new MyProxyCreator(remoteService);
+    if (doProxy)
+      return new MyProxyCreator(remoteService);
+    return super.createProxyCreator(remoteService);
+  }
+
+  private boolean doProxy;
+
+  @Override
+  public RebindResult generateIncrementally(TreeLogger logger, GeneratorContext ctx, String requestedClass)
+      throws UnableToCompleteException {
+
+    try {
+      JClassType plusinterface = ctx.getTypeOracle().findType(RemoteServicePlus.class.getName());
+      JClassType requested = ctx.getTypeOracle().findType(requestedClass);
+      boolean isPlusInterface = requested.isAssignableTo(plusinterface);
+      boolean noRemoteService = ctx.getPropertyOracle().getConfigurationProperty(
+          "gwtrpcplus_websockets_NoRemoveService").getValues().get(0).equals("true");
+      doProxy = !noRemoteService || isPlusInterface;
+
+    } catch (BadPropertyValueException e) {
+      logger.log(Type.ERROR, e.getMessage());
+    }
+
+    return super.generateIncrementally(logger, ctx, requestedClass);
   }
 
   public static class MyProxyCreator extends ProxyCreator {
@@ -34,6 +64,7 @@ public class RpcServiceGenerator extends ServiceInterfaceProxyGenerator {
     protected Class<? extends RemoteServiceProxy> getProxySupertype() {
       return GwtRpcProxy.class;
     }
+
 
     @Override
     protected void generateProxyContructor(SourceWriter srcWriter) {
