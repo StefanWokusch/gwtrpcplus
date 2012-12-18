@@ -43,13 +43,15 @@ public class RpcServiceGenerator extends ServiceInterfaceProxyGenerator {
       srcWriter.indent();
 
       for (JMethod m : serviceIntf.getOverridableMethods()) {
-        if (m.isAnnotationPresent(ServerPush.class))
-          srcWriter.println("methods.put(\"" + m.getName() + "\", new " + RequestMethodServerpush.class.getName()
-              + "(\"" + serviceIntf.getSimpleSourceName() + "\"));");
-        else
-          srcWriter.println("methods.put(\"" + m.getName() + "\", new " + RequestMethodBasic.class.getName() + "(\""
-              + serviceIntf.getSimpleSourceName() + "\", "
-              + (m.isAnnotationPresent(ResendAllowed.class) ? "true" : "false") + "));");
+        String resendAllowedValue = m.isAnnotationPresent(ResendAllowed.class) ? "true" : "false";
+        String serviceNameValue = "\"" + serviceIntf.getSimpleSourceName() + "\"";
+        if (m.isAnnotationPresent(ServerPush.class)) {
+          srcWriter.println("methods.put(\"" + m.getName() + "\", new " + RequestMethodServerpush.class.getName() + "("
+              + serviceNameValue + ", " + resendAllowedValue + "));");
+        } else {
+          srcWriter.println("methods.put(\"" + m.getName() + "\", new " + RequestMethodBasic.class.getName() + "("
+              + serviceNameValue + ", " + resendAllowedValue + "));");
+        }
       }
       srcWriter.outdent();
       srcWriter.println("}");

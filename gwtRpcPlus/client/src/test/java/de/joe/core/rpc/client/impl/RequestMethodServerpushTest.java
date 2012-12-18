@@ -64,7 +64,7 @@ public class RequestMethodServerpushTest {
     lastRequest = null;
     lastResponse = null;
     when(uuid.randomUUID()).thenReturn(id);
-    method = new RequestMethodServerpush("testService", uuid);
+    method = new RequestMethodServerpush("testService", uuid, false);
     method.setHandler(handler);
     doAnswer(new Answer<Void>() {
       @Override

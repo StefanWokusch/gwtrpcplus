@@ -2,9 +2,10 @@ package de.joe.core.rpc.client.impl;
 
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.user.client.rpc.StatusCodeException;
 
 import de.joe.core.rpc.client.util.RequestHelper;
+import de.joe.core.rpc.shared.InternalServerException;
+import de.joe.core.rpc.shared.TimeoutException;
 
 public class RequestMethodBasic extends AbstractRequestMethod {
   // Visible for tests only
@@ -49,8 +50,7 @@ public class RequestMethodBasic extends AbstractRequestMethod {
       if (answer.startsWith("+")) {
         RequestHelper.process(callback, answer.substring(1));
       } else {
-        callback.onError(null, new StatusCodeException(500,// Internal ServerException
-            "An Interal Serverexception was thrown. Look at the Serverlog for details"));
+        callback.onError(null, new InternalServerException(answer.substring(1)));
       }
     }
 
@@ -58,8 +58,7 @@ public class RequestMethodBasic extends AbstractRequestMethod {
     public boolean onTimeout() {
       if (!resendAllowed) {
         removeRequest(this);
-        callback.onError(null, new StatusCodeException(408,// Request timeout
-            "The Request timed out."));
+        callback.onError(null, new TimeoutException(resendAllowed));
       }
       return resendAllowed;
     }

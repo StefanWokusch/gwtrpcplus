@@ -99,7 +99,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
   }
 
   @SuppressWarnings("rawtypes")
-  private void start(final String uuid, String service, String data, HttpServletRequest request,
+  private void start(final String uuid, final String service, final String data, HttpServletRequest request,
       final RequestMethodAnswerer answerer) {
     RemoteServiceServlet servlet = helper.getServlet(service);
 
@@ -174,10 +174,9 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
               String answer = encoder.encodeResponseForFailure(rpcRequest.getMethod(), caught,
                   rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
               answerer.send("e" + answer);
-            } catch (SerializationException e) {
-              logger.error("Can't send Serverpush-Message to the Client", e);
             } catch (Throwable e) {
-              logger.error("Can't send Serverpush-Message to the Client", e);
+              logger.error("Can't Process Request because of thrown Exception at " + service + " with data " + data, e);
+              answerer.send("e-" + e.getMessage());
             }
           }
         };

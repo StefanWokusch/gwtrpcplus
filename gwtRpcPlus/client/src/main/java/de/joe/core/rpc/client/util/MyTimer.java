@@ -8,8 +8,9 @@ public interface MyTimer {
     /**
      * ms to fire a timeout
      */
-    private static final int TIMEOUT = 10000;
-    Timer timer = new Timer() {
+    private static final int TIMEOUT = 5000;
+
+    private Timer timer = new Timer() {
       @Override
       public void run() {
         fire();
@@ -17,7 +18,6 @@ public interface MyTimer {
     };
 
     public DefaultTimer() {
-      // TODO Auto-generated constructor stub
     }
 
     public void schedule() {

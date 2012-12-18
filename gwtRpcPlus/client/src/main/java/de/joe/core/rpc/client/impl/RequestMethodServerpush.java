@@ -2,24 +2,28 @@ package de.joe.core.rpc.client.impl;
 
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.user.client.rpc.StatusCodeException;
 
 import de.joe.core.rpc.client.util.RequestHelper;
 import de.joe.core.rpc.client.util.UUID;
+import de.joe.core.rpc.shared.InternalServerException;
+import de.joe.core.rpc.shared.ServerPushCallback;
+import de.joe.core.rpc.shared.TimeoutException;
 
 public class RequestMethodServerpush extends AbstractRequestMethod {
-
   private final String serviceName;
+  private final boolean resendAllowed;
 
-  public RequestMethodServerpush(String serviceName) {
-    this(serviceName, UUID.get());
+  public RequestMethodServerpush(String serviceName, boolean resendAllowed) {
+    this(serviceName, UUID.get(), resendAllowed);
   }
 
   private final UUID uuidfactory;
 
-  public RequestMethodServerpush(String serviceName, UUID uuidfactory) {
+
+  public RequestMethodServerpush(String serviceName, UUID uuidfactory, boolean resendAllowed) {
     this.serviceName = serviceName;
     this.uuidfactory = uuidfactory;
+    this.resendAllowed = resendAllowed;
   }
 
   private final class ServerpushRequest implements RequestPlus {
@@ -50,21 +54,25 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
     public void onAnswer(String response) {
       assert (response.startsWith("a") || response.startsWith("f") || response.startsWith("e")) : "Illegal ServerPush protocol";
 
-      String answer = response.substring(1);
       if (response.startsWith("e") || response.startsWith("f")) {
         removeRequest(this);
       }
-      RequestHelper.process(callback, answer);
+
+      if (response.startsWith("e-")) {
+        response = response.substring(2);
+        callback.onError(null, new InternalServerException(response.substring(2)));
+      } else {
+        ServerPushCallback.nextIsFinished = response.startsWith("f");
+        RequestHelper.process(callback, response.substring(1));
+      }
     }
 
     @Override
     public boolean onTimeout() {
-      // FIXME timeout handling with allowResend?
-      removeRequest(this);
-      callback.onError(null, new StatusCodeException(408,// Request timeout
-          "The Request timed out."));
-
-      return false;
+      callback.onError(null, new TimeoutException(resendAllowed));
+      if (!resendAllowed)
+        removeRequest(this);
+      return resendAllowed;
     }
   }
 

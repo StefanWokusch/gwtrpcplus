@@ -46,8 +46,8 @@ public class RequestMethodHandlerBasic implements RequestMethodHandler {
           rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
       answerer.send("+" + answer);
     } catch (Throwable e) {
-      logger.error("Can't Process Request because of thrown Exception at " + service + " with data " + data + ":", e);
-      answerer.send("-");
+      logger.error("Can't Process Request because of thrown Exception at " + service + " with data " + data, e);
+      answerer.send("-" + e.getMessage());
       return;
     } finally {
       helper.setThreadLocals(servlet, null);
