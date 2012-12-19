@@ -1,6 +1,7 @@
 package de.joe.core.rpc.server;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +17,21 @@ public class ModulGwtRpcPlus extends ServletModule {
 
   private final String modulename;
   private final Set<Class<? extends RemoteServiceServlet>> servletClasses;
+
+
+  /**
+   * @param base for example the projectName
+   * @param servletClasses Set of all ServletClasses
+   */
+  public ModulGwtRpcPlus(String modulename,
+      @SuppressWarnings("unchecked") Class<? extends RemoteServiceServlet>... servletClasses) {
+    Set<Class<? extends RemoteServiceServlet>> classes = new HashSet<Class<? extends RemoteServiceServlet>>();
+    for (Class<? extends RemoteServiceServlet> c : servletClasses)
+      classes.add(c);
+
+    this.modulename = modulename;
+    this.servletClasses = classes;
+  }
 
   /**
    * @param base for example the projectName
