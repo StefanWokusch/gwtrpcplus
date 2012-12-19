@@ -6,8 +6,8 @@ import com.google.gwt.core.ext.BadPropertyValueException;
 import com.google.gwt.core.ext.GeneratorContext;
 import com.google.gwt.core.ext.RebindResult;
 import com.google.gwt.core.ext.TreeLogger;
-import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.TreeLogger.Type;
+import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JMethod;
 import com.google.gwt.user.client.rpc.impl.RemoteServiceProxy;
@@ -18,7 +18,9 @@ import com.google.gwt.user.rebind.rpc.ServiceInterfaceProxyGenerator;
 import de.joe.core.rpc.client.RequestMethod;
 import de.joe.core.rpc.client.impl.GwtRpcProxy;
 import de.joe.core.rpc.client.impl.RequestMethodBasic;
+import de.joe.core.rpc.client.impl.RequestMethodQueued;
 import de.joe.core.rpc.client.impl.RequestMethodServerpush;
+import de.joe.core.rpc.shared.Queued;
 import de.joe.core.rpc.shared.RemoteServicePlus;
 import de.joe.core.rpc.shared.ResendAllowed;
 import de.joe.core.rpc.shared.ServerPush;
@@ -76,9 +78,20 @@ public class RpcServiceGenerator extends ServiceInterfaceProxyGenerator {
       for (JMethod m : serviceIntf.getOverridableMethods()) {
         String resendAllowedValue = m.isAnnotationPresent(ResendAllowed.class) ? "true" : "false";
         String serviceNameValue = "\"" + serviceIntf.getSimpleSourceName() + "\"";
-        if (m.isAnnotationPresent(ServerPush.class)) {
+        boolean isServerPush = m.isAnnotationPresent(ServerPush.class);
+        boolean isQueued = m.isAnnotationPresent(Queued.class);
+
+        if (isServerPush && isQueued) {
+          throw new IllegalArgumentException("Methods can't be ServerPush AND Queued (" + m + ")");
+        }
+
+        if (isServerPush) {
           srcWriter.println("methods.put(\"" + m.getName() + "\", new " + RequestMethodServerpush.class.getName() + "("
               + serviceNameValue + ", " + resendAllowedValue + "));");
+        } else if (isQueued) {
+          Queued queued = m.getAnnotation(Queued.class);
+          srcWriter.println("methods.put(\"" + m.getName() + "\", new " + RequestMethodQueued.class.getName() + "("
+              + serviceNameValue + ", " + queued.value() + ", " + resendAllowedValue + "));");
         } else {
           srcWriter.println("methods.put(\"" + m.getName() + "\", new " + RequestMethodBasic.class.getName() + "("
               + serviceNameValue + ", " + resendAllowedValue + "));");

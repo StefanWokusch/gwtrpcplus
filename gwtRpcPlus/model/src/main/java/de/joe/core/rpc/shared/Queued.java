@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface SingleRequest {
+public @interface Queued {
   /**
    * Amount of pending Requests of the Method
    */

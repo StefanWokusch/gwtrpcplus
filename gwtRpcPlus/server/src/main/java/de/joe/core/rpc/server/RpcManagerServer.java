@@ -37,14 +37,17 @@ public class RpcManagerServer {
   }
 
   @Inject
-  public RpcManagerServer(RequestMethodHandlerBasic basic, RequestMethodHandlerServerpush push) {
+  public RpcManagerServer(RequestMethodHandlerBasic basic, RequestMethodHandlerServerpush push,
+      RequestMethodHandlerQueued queued) {
     // TODO Configuratble
     this.requestMethodHandlers = new HashMap<>();
     this.requestMethodHandlers.put(basic.getRequestTypeName(), basic);
     this.requestMethodHandlers.put(push.getRequestTypeName(), push);
+    this.requestMethodHandlers.put(queued.getRequestTypeName(), queued);
   }
 
-  public void onCall(final String clientId, String contextPath, String data, String permStrongName, String reqModuleBasePath) {
+  public void onCall(final String clientId, String contextPath, String data, String permStrongName,
+      String reqModuleBasePath) {
     onCall(clientId, data, new HttpServletRequestGwtRpc(contextPath, permStrongName, reqModuleBasePath));
   }
 
