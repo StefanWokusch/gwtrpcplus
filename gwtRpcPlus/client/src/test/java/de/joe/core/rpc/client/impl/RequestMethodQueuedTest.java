@@ -21,7 +21,7 @@ import com.google.gwt.http.client.Response;
 import de.joe.core.rpc.client.RequestMethod.ConnectionHandler;
 import de.joe.core.rpc.client.RequestMethod.RequestPlus;
 import de.joe.core.rpc.client.util.MyScheduler;
-import de.joe.core.rpc.shared.PriorisedRequest;
+import de.joe.core.rpc.shared.PrioritisedRequest;
 
 @SuppressWarnings("unused")
 public class RequestMethodQueuedTest {
@@ -172,9 +172,9 @@ public class RequestMethodQueuedTest {
   @Test
   public void prio_beforeSend_queue() {
     init(1, true);
-    PriorisedRequest r1 = (PriorisedRequest) method.call("reqData1", callback);
-    PriorisedRequest r2 = (PriorisedRequest) method.call("reqData2", callback);
-    PriorisedRequest r3 = (PriorisedRequest) method.call("reqData3", callback);
+    PrioritisedRequest r1 = (PrioritisedRequest) method.call("reqData1", callback);
+    PrioritisedRequest r2 = (PrioritisedRequest) method.call("reqData2", callback);
+    PrioritisedRequest r3 = (PrioritisedRequest) method.call("reqData3", callback);
 
     r1.setPriority(1);
     r2.setPriority(2);
@@ -189,9 +189,9 @@ public class RequestMethodQueuedTest {
   @Test
   public void prio_afterSend_queue() {
     init(1, true);
-    PriorisedRequest r1 = (PriorisedRequest) method.call("reqData1", callback);
-    PriorisedRequest r2 = (PriorisedRequest) method.call("reqData2", callback);
-    PriorisedRequest r3 = (PriorisedRequest) method.call("reqData3", callback);
+    PrioritisedRequest r1 = (PrioritisedRequest) method.call("reqData1", callback);
+    PrioritisedRequest r2 = (PrioritisedRequest) method.call("reqData2", callback);
+    PrioritisedRequest r3 = (PrioritisedRequest) method.call("reqData3", callback);
 
     doStuff();
 

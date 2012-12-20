@@ -2,7 +2,7 @@ package de.joe.core.rpc.shared;
 
 import com.google.gwt.http.client.Request;
 
-public abstract class PriorisedRequest extends Request {
+public abstract class PrioritisedRequest extends Request {
   /**
    * Priority lower is more important
    * 

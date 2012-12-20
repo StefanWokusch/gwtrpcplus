@@ -9,7 +9,7 @@ import com.google.gwt.http.client.RequestCallback;
 import de.joe.core.rpc.client.util.MyScheduler;
 import de.joe.core.rpc.client.util.RequestHelper;
 import de.joe.core.rpc.shared.InternalServerException;
-import de.joe.core.rpc.shared.PriorisedRequest;
+import de.joe.core.rpc.shared.PrioritisedRequest;
 import de.joe.core.rpc.shared.TimeoutException;
 
 public class RequestMethodQueued extends AbstractRequestMethod {
@@ -45,7 +45,7 @@ public class RequestMethodQueued extends AbstractRequestMethod {
 
     private double priority = 0;
 
-    private final PriorisedRequest request = new PriorisedRequest() {
+    private final PrioritisedRequest request = new PrioritisedRequest() {
       @Override
       public void cancel() {
         if (pending) {

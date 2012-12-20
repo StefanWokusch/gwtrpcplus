@@ -47,7 +47,7 @@ public class RpcServiceGenerator extends ServiceInterfaceProxyGenerator {
       JClassType requested = ctx.getTypeOracle().findType(requestedClass);
       boolean isPlusInterface = requested.isAssignableTo(plusinterface);
       boolean noRemoteService = ctx.getPropertyOracle().getConfigurationProperty(
-          "gwtrpcplus_websockets_NoRemoveService").getValues().get(0).equals("true");
+          "gwtrpcplus_NoRemoveService").getValues().get(0).equals("true");
       doProxy = !noRemoteService || isPlusInterface;
 
     } catch (BadPropertyValueException e) {
