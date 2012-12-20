@@ -17,15 +17,11 @@
 	</generate-with>
 
 
-	<define-configuration-property name="gwtrpcplus_websockets_enabled"
-		is-multi-valued="false" />
-	<set-configuration-property name="gwtrpcplus_websockets_enabled"
-		value="false" />
+	<define-configuration-property name="gwtrpcplus_websockets_enabled" is-multi-valued="false" />
+	<set-configuration-property name="gwtrpcplus_websockets_enabled" value="false" />
 
-	<define-configuration-property name="gwtrpcplus_NoRemoveService"
-		is-multi-valued="false" />
-	<set-configuration-property name="gwtrpcplus_NoRemoveService"
-		value="false" />
+	<define-configuration-property name="gwtrpcplus_NoRemoteService" is-multi-valued="false" />
+	<set-configuration-property name="gwtrpcplus_NoRemoteService" value="false" />
 
 
 	<generate-with class="de.joe.core.rpc.rebind.RpcServiceGenerator">
