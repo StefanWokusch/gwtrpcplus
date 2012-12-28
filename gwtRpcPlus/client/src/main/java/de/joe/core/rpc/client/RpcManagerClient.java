@@ -78,6 +78,7 @@ public class RpcManagerClient {
       c.setHandler(new RecieveHandler() {
         @Override
         public void onRecieve(String data) {
+        	schedule();
           if (data.isEmpty())
             return;
           assert (data.contains("#")) : "Illegal protocol: \"" + data + "\"";
@@ -129,7 +130,6 @@ public class RpcManagerClient {
   }
 
   private void onRecieve(String data) {
-    schedule();
     final String id = data.substring(0, data.indexOf("#"));
     data = data.substring(data.indexOf("#") + 1);
 

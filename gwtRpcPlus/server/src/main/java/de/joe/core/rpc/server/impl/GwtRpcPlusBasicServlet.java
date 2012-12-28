@@ -63,7 +63,7 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
 
   private void request(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     String data = req.getReader().readLine();
-
+    
     String clientId = req.getHeader("clientId");
     if (clientId == null) {
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
