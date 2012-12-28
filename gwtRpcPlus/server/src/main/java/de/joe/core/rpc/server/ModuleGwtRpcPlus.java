@@ -12,8 +12,8 @@ import de.joe.core.rpc.server.impl.GwtRpcPlusBasicServlet;
 import de.joe.core.rpc.server.impl.GwtRpcPlusWebsocket;
 import de.joe.core.rpc.server.impl.GwtRpcPlusWebsocketDummy;
 
-public class ModulGwtRpcPlus extends ServletModule {
-  private final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ModulGwtRpcPlus.class);
+public class ModuleGwtRpcPlus extends ServletModule {
+  private final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ModuleGwtRpcPlus.class);
 
   private final String modulename;
   private final Set<Class<? extends RemoteServiceServlet>> servletClasses;
@@ -23,7 +23,7 @@ public class ModulGwtRpcPlus extends ServletModule {
    * @param base for example the projectName
    * @param servletClasses Set of all ServletClasses
    */
-  public ModulGwtRpcPlus(String modulename,
+  public ModuleGwtRpcPlus(String modulename,
       @SuppressWarnings("unchecked") Class<? extends RemoteServiceServlet>... servletClasses) {
     Set<Class<? extends RemoteServiceServlet>> classes = new HashSet<Class<? extends RemoteServiceServlet>>();
     for (Class<? extends RemoteServiceServlet> c : servletClasses)
@@ -37,7 +37,7 @@ public class ModulGwtRpcPlus extends ServletModule {
    * @param base for example the projectName
    * @param servletClasses Set of all ServletClasses
    */
-  public ModulGwtRpcPlus(String modulename, Set<Class<? extends RemoteServiceServlet>> servletClasses) {
+  public ModuleGwtRpcPlus(String modulename, Set<Class<? extends RemoteServiceServlet>> servletClasses) {
     this.modulename = modulename;
     this.servletClasses = servletClasses;
   }
