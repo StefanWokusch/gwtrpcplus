@@ -21,6 +21,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
 
   private final RpcHelper helper;
 
+  // FIXME Add alive-ping to don't fire the timeout on the client side
   @Override
   public String getRequestTypeName() {
     return "p";
@@ -30,7 +31,6 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
   public RequestMethodHandlerServerpush(RpcHelper helper) {
     this.helper = helper;
   }
-
 
   interface RPCInterface {
     RPCRequest decodeRequest(String encodedRequest, Class<? extends RemoteServiceServlet> type,

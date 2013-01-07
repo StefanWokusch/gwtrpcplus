@@ -34,4 +34,10 @@ public abstract class AbstractConnection implements Connection, RecieveHandler {
     handler.onDisconnect();
   }
 
+  @Override
+  public final void onTimeout(){
+    assertInit();
+    handler.onTimeout();
+  }
+  
 }

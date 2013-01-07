@@ -21,6 +21,11 @@ public interface Connection {
      * Called when the Connection is closed (like serverDown, websocket-closed,...)
      */
     void onDisconnect();
+
+    /**
+     * Call this when you are sure the Server timeouted. This force a onTimeout in RpcManager after the timeout
+     */
+    void onTimeout();
   }
 
   /**
@@ -44,6 +49,7 @@ public interface Connection {
    * Called to send a message to the Server
    * 
    * @param request request to send
+   * @param isResend true when the request is sended a second time (for managing http's longpolling)
    */
   void send(String request);
 

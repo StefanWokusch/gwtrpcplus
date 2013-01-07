@@ -23,6 +23,7 @@ public class RpcManagerClient {
   private static RpcManagerClient instance;
 
   public static void log(String text) {
+    System.out.println(text);
     // GWT.log(text);
   }
 
@@ -37,7 +38,7 @@ public class RpcManagerClient {
         }
       };
     }
-    timer.schedule();
+    timer.schedule(true);
   }
 
   public static RpcManagerClient get() {
@@ -78,7 +79,7 @@ public class RpcManagerClient {
       c.setHandler(new RecieveHandler() {
         @Override
         public void onRecieve(String data) {
-        	schedule();
+          schedule();
           if (data.isEmpty())
             return;
           assert (data.contains("#")) : "Illegal protocol: \"" + data + "\"";
@@ -116,6 +117,11 @@ public class RpcManagerClient {
           if (lastActive != getActiveConnection())
             for (RpcManagerHandler h : handlers)
               h.onActiveConnectionChanged(getActiveConnection().connection);
+        }
+
+        @Override
+        public void onTimeout() {
+          timer.schedule(false);
         }
       });
       wrapper.state = ConnectionState.TRYCONNECT;
@@ -254,9 +260,11 @@ public class RpcManagerClient {
       }
     }
 
-    if (pending)
+    if (pending) {
+      schedule();
       for (RpcManagerHandler handler : handlers)
         handler.onTimeout();
+    }
   }
 
   private void checkPending() {

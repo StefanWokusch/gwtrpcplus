@@ -12,133 +12,148 @@ import de.joe.core.rpc.client.util.Client;
 
 public class ConnectionHttp extends AbstractConnection {
 
-	/**
-	 * Thue when the BasicConnectino should be used
-	 */
-	private boolean connnected = false;
+  /**
+   * Thue when the BasicConnectino should be used
+   */
+  private boolean connnected = false;
 
-	/**
-	 * true when the Serverpush-request is pending
-	 */
-	private boolean serverCurrentlyPending = false;
+  /**
+   * true when the Serverpush-request is pending
+   */
+  private boolean serverCurrentlyPending = false;
 
-	public boolean isPolling() {
-		return serverCurrentlyPending;
-	}
+  public boolean isPolling() {
+    return serverCurrentlyPending;
+  }
 
-	/**
-	 * true when Response of the Server is expected
-	 */
-	private boolean requestsPending = false;
+  /**
+   * true when Response of the Server is expected
+   */
+  private boolean requestsPending = false;
 
-	/**
-	 * Amount of pending simple Callbacks (they can get multiple responses, so no serverpolling is needed)
-	 */
-	private int callbacksPending = 0;
+  /**
+   * Amount of pending simple Callbacks (they can get multiple responses, so no serverpolling is
+   * needed)
+   */
+  private int callbacksPending = 0;
 
-	private void updateServerPush() {
-		if (requestsPending && connnected && !serverCurrentlyPending && callbacksPending == 0)
-			try {
-				serverCurrentlyPending = true;
-				// System.out.println("Sending longpoll");
-				longPushService.sendRequest("", longPushCallback);
-			} catch (RequestException e) {
-				e.printStackTrace();
-			}
-	}
+  /**
+   * Flag to not do a serverpush ehen server isnt responding
+   * 
+   * this causes a bug after serverrecover, not timeouting some results, because the polling
+   * reschedule the ontimeout
+   */
+  private boolean notresponding = false;
 
-	@Override
-	public void setPending(boolean pending) {
-		this.requestsPending = pending;
-		updateServerPush();
-	}
+  private void updateServerPush() {
+    if (!notresponding && requestsPending && connnected && !serverCurrentlyPending && callbacksPending == 0)
+      try {
+        serverCurrentlyPending = true;
+        // System.out.println("Sending longpoll");
+        longPushService.sendRequest("", longPushCallback);
+      } catch (RequestException e) {
+        e.printStackTrace();
+      }
+  }
 
-	@Override
-	public void connect() {
-		connnected = true;
-		updateServerPush();
-		// Always connected
-		onConnected();
-	}
+  @Override
+  public void setPending(boolean pending) {
+    this.requestsPending = pending;
+    updateServerPush();
+  }
 
-	@Override
-	public void disconnect() {
-		connnected = false;
-		onDisconnect();
-	}
+  @Override
+  public void connect() {
+    connnected = true;
+    updateServerPush();
+    // Always connected
+    onConnected();
+  }
 
-	private final RequestCallback longPushCallback = new RequestCallback() {
-		@Override
-		public void onResponseReceived(Request request, Response response) {
-			serverCurrentlyPending = false;
+  @Override
+  public void disconnect() {
+    connnected = false;
+    onDisconnect();
+  }
 
-			if (response.getStatusCode() != Response.SC_OK) {
-				if (response.getStatusCode() != 0)// Ignore 0 (called by server don't responsed)
-					System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
-			} else {
-				final String[] resp = response.getText().split("\n");
-//				long start = System.currentTimeMillis();
-				for (String res : resp)
-					onRecieve(res);
-//				long duration = (System.currentTimeMillis() - start);
-//				System.out.println("Duration: " + duration + "ms (avg:" + duration / resp.length + ")");
-			}
+  private final RequestCallback longPushCallback = new RequestCallback() {
+    @Override
+    public void onResponseReceived(Request request, Response response) {
+      serverCurrentlyPending = false;
 
-			updateServerPush();
-		}
+      if (response.getStatusCode() != Response.SC_OK) {
+        if (response.getStatusCode() != 0)// Ignore 0 (called by server don't responsed)
+          System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
+        else
+          onTimeout();
+      } else {
+        final String[] resp = response.getText().split("\n");
+        // long start = System.currentTimeMillis();
+        for (String res : resp)
+          onRecieve(res);
+        // long duration = (System.currentTimeMillis() - start);
+        // System.out.println("Duration: " + duration + "ms (avg:" + duration / resp.length + ")");
+      }
 
-		@Override
-		public void onError(Request request, Throwable exception) {
-			System.err.println("Error at the HTTPConnections longpoll");
-			exception.printStackTrace();
+      updateServerPush();
+    }
 
-			serverCurrentlyPending = false;
-			updateServerPush();
-		}
-	};
+    @Override
+    public void onError(Request request, Throwable exception) {
+      System.err.println("Error at the HTTPConnections longpoll");
+      exception.printStackTrace();
 
-	private final RequestCallback callback = new RequestCallback() {
-		@Override
-		public void onResponseReceived(Request request, Response response) {
-			if (response.getStatusCode() != Response.SC_OK) {
-				if (response.getStatusCode() != 0)// Ignore 0 (called by server don't responsed)
-					System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
-			} else
-				onRecieve(response.getText());
+      serverCurrentlyPending = false;
+      updateServerPush();
+    }
+  };
 
-			callbacksPending--;
-			updateServerPush();
-		}
+  private final RequestCallback callback = new RequestCallback() {
+    @Override
+    public void onResponseReceived(Request request, Response response) {
+      notresponding = response.getStatusCode() == 0;
+      if (response.getStatusCode() != Response.SC_OK) {
+        if (response.getStatusCode() != 0)// Ignore 0 (called by server don't responsed)
+          System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
+        else
+          onTimeout();
+      } else
+        onRecieve(response.getText());
 
-		@Override
-		public void onError(Request request, Throwable exception) {
-			System.err.println("Error at the HTTPConnections callback");
-			exception.printStackTrace();
+      callbacksPending--;
+      updateServerPush();
+    }
 
-			callbacksPending--;
-			updateServerPush();
-		}
-	};
+    @Override
+    public void onError(Request request, Throwable exception) {
+      System.err.println("Error at the HTTPConnections callback");
+      exception.printStackTrace();
 
-	private final RequestBuilder service;
-	private final RequestBuilder longPushService;
+      callbacksPending--;
+      updateServerPush();
+    }
+  };
 
-	public ConnectionHttp() {
-		service = new RpcRequestBuilder().create(GWT.getModuleBaseURL() + "gwtRpcPlusBasic").finish();
-		service.setHeader("clientId", Client.id);
-		longPushService = new RpcRequestBuilder().create(GWT.getModuleBaseURL() + "gwtRpcPlusBasic").finish();
-		longPushService.setHeader("clientId", Client.id);
-		longPushService.setHeader("longpush", "true");
-	}
+  private final RequestBuilder service;
+  private final RequestBuilder longPushService;
 
-	@Override
-	public void send(String request) {
-		try {
-			service.sendRequest(request, callback);
-			callbacksPending++;
-		} catch (RequestException e) {
-			e.printStackTrace();
-		}
-	}
+  public ConnectionHttp() {
+    service = new RpcRequestBuilder().create(GWT.getModuleBaseURL() + "gwtRpcPlusBasic").finish();
+    service.setHeader("clientId", Client.id);
+    longPushService = new RpcRequestBuilder().create(GWT.getModuleBaseURL() + "gwtRpcPlusBasic").finish();
+    longPushService.setHeader("clientId", Client.id);
+    longPushService.setHeader("longpush", "true");
+  }
+
+  @Override
+  public void send(String request) {
+    System.err.println("request " + request);
+    try {
+      service.sendRequest(request, callback);
+      callbacksPending++;
+    } catch (RequestException e) {
+      e.printStackTrace();
+    }
+  }
 
 }

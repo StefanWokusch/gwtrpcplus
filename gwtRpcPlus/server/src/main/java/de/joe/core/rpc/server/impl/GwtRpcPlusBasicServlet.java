@@ -41,7 +41,8 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
     }
     ArrayList<String> response = new ArrayList<String>();
 
-    String r = manager.getResponse(clientId, 1, TimeUnit.SECONDS);
+    // WARN, waittime without response have to be > clients timeout
+    String r = manager.getResponse(clientId, 25, TimeUnit.SECONDS);
     if (r != null) {
       // We have a response in the queue, so answer it directly
       response.add(r);
@@ -63,7 +64,7 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
 
   private void request(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     String data = req.getReader().readLine();
-    
+
     String clientId = req.getHeader("clientId");
     if (clientId == null) {
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
