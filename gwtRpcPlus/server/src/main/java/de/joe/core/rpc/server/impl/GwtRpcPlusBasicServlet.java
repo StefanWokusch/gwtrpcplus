@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
+import com.google.gwt.user.server.rpc.RPCServletUtils;
 import com.google.inject.Inject;
 
 import de.joe.core.rpc.server.RpcManagerServer;
@@ -33,56 +34,64 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
       request(req, resp);
   }
 
-  private void longpush(HttpServletRequest req, HttpServletResponse resp) {
-    String clientId = req.getHeader("clientId");
+  private void longpush(HttpServletRequest request, HttpServletResponse resp) {
+    String clientId = request.getHeader("clientId");
     if (clientId == null) {
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
-    ArrayList<String> response = new ArrayList<String>();
+    ArrayList<String> responses = new ArrayList<String>();
 
     // WARN, waittime without response have to be > clients timeout
     String r = manager.getResponse(clientId, 25, TimeUnit.SECONDS);
     if (r != null) {
       // We have a response in the queue, so answer it directly
-      response.add(r);
+      responses.add(r);
       // Add the other Responses queued
       while ((r = manager.getResponse(clientId)) != null)
-        response.add(r);
+        responses.add(r);
     }
 
-    resp.setStatus(HttpServletResponse.SC_OK);
+    StringBuffer b = new StringBuffer();
     try {
-      for (String re : response) {
-        resp.getWriter().write(re);
-        resp.getWriter().write("\n");
+      for (String re : responses) {
+        b.append(re);
+        b.append("\n");
       }
+      String response = b.toString();
+      boolean gzipEncode = RPCServletUtils.acceptsGzipEncoding(request)
+          && RPCServletUtils.exceedsUncompressedContentLengthLimit(response);
+
+      RPCServletUtils.writeResponse(getServletContext(), resp, response, gzipEncode);
     } catch (IOException e) {
       e.printStackTrace();
     }
   }
 
-  private void request(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    String data = req.getReader().readLine();
+  private void request(HttpServletRequest request, HttpServletResponse resp) throws IOException {
+    String data = request.getReader().readLine();
 
-    String clientId = req.getHeader("clientId");
+    String clientId = request.getHeader("clientId");
     if (clientId == null) {
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
 
     // String contextPath = req.getContextPath();
-    String strongname = req.getHeader(RpcRequestBuilder.STRONG_NAME_HEADER);
-    String modulebase = req.getHeader(RpcRequestBuilder.MODULE_BASE_HEADER);
+    String strongname = request.getHeader(RpcRequestBuilder.STRONG_NAME_HEADER);
+    String modulebase = request.getHeader(RpcRequestBuilder.MODULE_BASE_HEADER);
 
-    manager.onCall(clientId, req.getContextPath(), data, strongname, modulebase);
+    manager.onCall(clientId, request.getContextPath(), data, strongname, modulebase);
     // TODO Make async
     String response = manager.getResponse(clientId);
 
     if (response != null) {
-      resp.getWriter().write(response);
-    }
+      boolean gzipEncode = RPCServletUtils.acceptsGzipEncoding(request)
+          && RPCServletUtils.exceedsUncompressedContentLengthLimit(response);
 
-    resp.setStatus(HttpServletResponse.SC_OK);
+      RPCServletUtils.writeResponse(getServletContext(), resp, response, gzipEncode);
+    } else {
+      resp.setStatus(HttpServletResponse.SC_OK);
+    }
   }
 }

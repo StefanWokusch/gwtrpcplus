@@ -8,6 +8,7 @@ import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 
+import de.joe.core.rpc.client.RpcManagerClient;
 import de.joe.core.rpc.client.util.Client;
 
 public class ConnectionHttp extends AbstractConnection {
@@ -147,7 +148,7 @@ public class ConnectionHttp extends AbstractConnection {
 
   @Override
   public void send(String request) {
-    System.err.println("request " + request);
+    RpcManagerClient.log("request " + request);
     try {
       service.sendRequest(request, callback);
       callbacksPending++;

@@ -22,8 +22,11 @@ import de.joe.core.rpc.client.util.MyTimer;
 public class RpcManagerClient {
   private static RpcManagerClient instance;
 
+  // TODO Fire onTimeout after first direct Timeout call (to show early server-disconnect)
+  // TODO Fire onTimeout early (shorter timer) after first answer after timeout (to resend all
+  // requests fast)
   public static void log(String text) {
-    System.out.println(text);
+    // System.out.println(text);
     // GWT.log(text);
   }
 
