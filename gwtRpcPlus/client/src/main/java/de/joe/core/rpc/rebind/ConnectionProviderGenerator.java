@@ -58,12 +58,13 @@ public class ConnectionProviderGenerator extends Generator {
     sourceWriter.indent();
     sourceWriter.println("ArrayList<Connection> ret = new ArrayList<Connection>();");
 
-    sourceWriter.println("ret.add(new " + ConnectionHttp.class.getName() + "());");
-
-    if (context.getPropertyOracle().getConfigurationProperty("gwtrpcplus_websockets_enabled").getValues().get(0).equals(
+    // High Prio first -> Low Prio later
+    if (context.getPropertyOracle().getConfigurationProperty("gwtrpcplus_websockets_enabled").getValues().get(0).equalsIgnoreCase(
         "true")) {
       sourceWriter.println("ret.add(new " + ConnectionWebsocket.class.getName() + "());");
     }
+
+    sourceWriter.println("ret.add(new " + ConnectionHttp.class.getName() + "());");
 
     sourceWriter.println("return ret;");
     sourceWriter.outdent();

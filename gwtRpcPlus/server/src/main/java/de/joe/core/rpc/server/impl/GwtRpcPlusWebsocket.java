@@ -2,6 +2,7 @@ package de.joe.core.rpc.server.impl;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -66,7 +67,7 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
     // Jetty Bug #395444 https://bugs.eclipse.org/bugs/show_bug.cgi?id=395444
     // Fix failed with a nullpointer exception at Jetty 9.0.0.M3
     // Fix not working with Jetty 9.0.0.M2 and Chrome 23-25A
-    // factory.getExtensionFactory().unregister("x-webkit-deflate-frame");
+//    factory.getExtensionFactory().unregister("x-webkit-deflate-frame");
   }
 
   @WebSocket
@@ -139,25 +140,25 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
           if (connection.isOpen()) {
             lock.writeLock().lock();
             try {
-              // int maxSendSize = 100;
-              // for (int i = 0; i < answer.length(); i = Math.min(i + maxSendSize,
-              // answer.length())) {
-              // String a = answer.substring(i, Math.min(i + maxSendSize, answer.length()));
-              // System.out.println("Writing " + a.length() + "chars: " + a.substring(0, 10) +
-              // "...");
-              // Future<SendResult> future = connection.write(a);
-              // System.out.println(".");
+              int maxSendSize = 100;
+              for (int i = 0; i < answer.length(); i = Math.min(i + maxSendSize, answer.length())) {
+                String a = answer.substring(i, Math.min(i + maxSendSize, answer.length()));
+                System.out.println("Writing " + a.length() + "chars: " + a.substring(0, 10) + "...");
+                Future<Void> future = connection.write(a);
+                System.out.println(".");
+                future.get();
+                System.out.println("ok");
+              }
+              // System.out.println("send: "+answer);
+              // System.out.println("send");
+              // Future<Void> future = connection.write(answer);
+              // System.out.println("send2");
               // future.get();
-              // System.out.println("ok");
-              // }
-//              System.out.println("send: "+answer);
-              connection.write(answer);
-            } catch (IOException e) {
+              // System.out.println("sendEND");
+            } catch (Throwable e) {
+              // TODO: handle exception
               logger.error("Exception while Sending Message. This could caused by disconnecting.");
-              // } catch (InterruptedException e) {
-              // e.printStackTrace();
-              // } catch (ExecutionException e) {
-              // e.printStackTrace();
+
             } finally {
               lock.writeLock().unlock();
             }
