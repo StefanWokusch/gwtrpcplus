@@ -45,8 +45,13 @@ public class RpcHelper {
       // Get the Attributes
       ThreadLocal<HttpServletRequest> targetReq = (ThreadLocal<HttpServletRequest>) req.get(target);
       // Default init
-      if (targetReq == null)
-        req.set(target, targetReq = new ThreadLocal<HttpServletRequest>());
+      if (targetReq == null) {
+        synchronized (target) {
+          targetReq = (ThreadLocal<HttpServletRequest>) req.get(target);
+          if (targetReq == null)
+            req.set(target, targetReq = new ThreadLocal<HttpServletRequest>());
+        }
+      }
       // Set the values
       targetReq.set(srcReq);
     } catch (SecurityException e) {
