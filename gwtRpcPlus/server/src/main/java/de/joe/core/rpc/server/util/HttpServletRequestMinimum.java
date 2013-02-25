@@ -16,12 +16,15 @@ import javax.servlet.http.HttpSession;
 
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 
-public class HttpServletRequestGwtRpc implements HttpServletRequest {
+/**
+ * Minimal Version of a ServletRequest. Used for example for Websocket-support
+ */
+public class HttpServletRequestMinimum implements HttpServletRequest {
   private final String permStrongName;
   private final String reqModuleBasePath;
   private final String contextPath;
 
-  public HttpServletRequestGwtRpc(String contextPath, String permStrongName, String reqModuleBasePath) {
+  public HttpServletRequestMinimum(String contextPath, String permStrongName, String reqModuleBasePath) {
     this.contextPath = contextPath;
     this.permStrongName = permStrongName;
     this.reqModuleBasePath = reqModuleBasePath;

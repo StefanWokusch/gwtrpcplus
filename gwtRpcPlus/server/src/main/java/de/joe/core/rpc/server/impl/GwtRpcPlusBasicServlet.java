@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.server.rpc.RPCServletUtils;
 import com.google.inject.Inject;
 
@@ -78,10 +77,12 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
     }
 
     // String contextPath = req.getContextPath();
-    String strongname = request.getHeader(RpcRequestBuilder.STRONG_NAME_HEADER);
-    String modulebase = request.getHeader(RpcRequestBuilder.MODULE_BASE_HEADER);
+//    String strongname = request.getHeader(RpcRequestBuilder.STRONG_NAME_HEADER);
+//    String modulebase = request.getHeader(RpcRequestBuilder.MODULE_BASE_HEADER);
+//    manager.onCall(clientId, data, request.getContextPath(), strongname, modulebase);
 
-    manager.onCall(clientId, request.getContextPath(), data, strongname, modulebase);
+    manager.onCall(clientId, data, request);
+    
     // TODO Make async
     String response = manager.getResponse(clientId);
 

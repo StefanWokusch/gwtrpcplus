@@ -34,7 +34,7 @@ public interface RequestMethod {
     boolean onTimeout();
 
     /**
-     * @return a unique name for the Method, matching to some RequestMethodHandler on the Serverside
+     * @return a unique name for the RequestMethod, matching to some RequestMethodHandler on the Serverside
      */
     String getRequestTypeName();
   }

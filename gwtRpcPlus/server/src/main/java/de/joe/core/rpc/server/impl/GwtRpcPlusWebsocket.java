@@ -109,7 +109,7 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
         isInit = true;
         processInit(data);
       } else {
-        manager.onCall(clientId, contextPath, data, permutationStrongName, moduleBasePath);
+        manager.onCall(clientId, data, contextPath, permutationStrongName, moduleBasePath);
       }
     }
 

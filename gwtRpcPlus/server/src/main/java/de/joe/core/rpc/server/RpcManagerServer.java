@@ -14,7 +14,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.inject.Inject;
 
 import de.joe.core.rpc.server.RequestMethodHandler.RequestMethodAnswerer;
-import de.joe.core.rpc.server.util.HttpServletRequestGwtRpc;
+import de.joe.core.rpc.server.util.HttpServletRequestMinimum;
 
 public class RpcManagerServer {
   private final HashMap<String, RequestMethodHandler> requestMethodHandlers;
@@ -46,9 +46,9 @@ public class RpcManagerServer {
     this.requestMethodHandlers.put(queued.getRequestTypeName(), queued);
   }
 
-  public void onCall(final String clientId, String contextPath, String data, String permStrongName,
+  public void onCall(final String clientId, String data, String contextPath, String permStrongName,
       String reqModuleBasePath) {
-    onCall(clientId, data, new HttpServletRequestGwtRpc(contextPath, permStrongName, reqModuleBasePath));
+    onCall(clientId, data, new HttpServletRequestMinimum(contextPath, permStrongName, reqModuleBasePath));
   }
 
   public void onCall(final String clientId, String data, HttpServletRequest req) {

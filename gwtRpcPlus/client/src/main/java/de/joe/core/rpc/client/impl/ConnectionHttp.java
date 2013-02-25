@@ -83,10 +83,10 @@ public class ConnectionHttp extends AbstractConnection {
       serverCurrentlyPending = false;
 
       if (response.getStatusCode() != Response.SC_OK) {
-        if (response.getStatusCode() != 0)// Ignore 0 (called by server don't responsed)
-          System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
-        else
+        if (response.getStatusCode() == 0) // server don't responsed
           onTimeout();
+        else
+          System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
       } else {
         final String[] resp = response.getText().split("\n");
         // long start = System.currentTimeMillis();
