@@ -10,6 +10,9 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
+import com.google.gwt.user.client.Window.ClosingHandler;
 
 import de.joe.core.rpc.client.Connection.RecieveHandler;
 import de.joe.core.rpc.client.RequestMethod.ConnectionHandler;
@@ -76,6 +79,13 @@ public class RpcManagerClient {
   }
 
   public RpcManagerClient(ConnectionProvider prov) {
+    Window.addWindowClosingHandler(new ClosingHandler() {
+      @Override
+      public void onWindowClosing(ClosingEvent event) {
+        send("disconnect");
+      }
+    });
+
     for (final Connection c : prov.get()) {
       final ConnectionWrapper wrapper = new ConnectionWrapper(c);
       connections.add(wrapper);

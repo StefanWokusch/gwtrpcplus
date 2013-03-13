@@ -16,7 +16,7 @@ import com.google.inject.Inject;
 import de.joe.core.rpc.server.RpcManagerServer;
 
 /**
- * Bind to /$modulename$/gwtrpcplus
+ * Bind this to /$modulename$/gwtrpcplus
  */
 @Singleton
 public class GwtRpcPlusBasicServlet extends HttpServlet {
@@ -24,6 +24,7 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
 
   @Inject
   private RpcManagerServer manager;
+  
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -39,6 +40,10 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       return;
     }
+    
+    
+    
+    // TODO Move to RpcManager
     ArrayList<String> responses = new ArrayList<String>();
 
     // WARN, waittime without response have to be > clients timeout

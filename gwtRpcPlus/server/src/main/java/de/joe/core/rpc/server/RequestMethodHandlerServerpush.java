@@ -136,7 +136,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
           @Override
           public void answer(Object obj) {
             if (!handlers.containsKey(uuid)) {
-              // TODO warning?
+              logger.error("Can't send answer, ServerPush already ended");
               return;// Ignore Answer, already finished
             }
             try {
@@ -151,7 +151,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
           @Override
           public void finish(Object obj) {
             if (!handlers.containsKey(uuid)) {
-              // TODO warning?
+              logger.error("Can't send finish, ServerPush already ended");
               return;// Ignore Answer, already finished
             }
             try {
@@ -166,7 +166,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
           @Override
           public void abort(Exception caught) {
             if (!handlers.containsKey(uuid)) {
-              // TODO warning?
+              logger.error("Can't send abort, ServerPush already ended");
               return;// Ignore Answer, already finished
             }
             handlers.remove(uuid);

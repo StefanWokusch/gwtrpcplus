@@ -1,49 +1,57 @@
 package de.joe.core.rpc.server;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.inject.Inject;
 
 import de.joe.core.rpc.server.RequestMethodHandler.RequestMethodAnswerer;
+import de.joe.core.rpc.server.RpcPlusClient.RpcPlusClientHandler;
 import de.joe.core.rpc.server.util.HttpServletRequestMinimum;
+import de.joe.core.rpc.server.util.Logger;
 
+@Singleton
 public class RpcManagerServer {
+  private Logger logger = new Logger(RpcManagerServer.class);
+
   private final HashMap<String, RequestMethodHandler> requestMethodHandlers;
 
-  // TODO Timeout of clients and queues
-  private final ConcurrentHashMap<String, BlockingQueue<String>> answers = new ConcurrentHashMap<String, BlockingQueue<String>>();
-  private final ConcurrentHashMap<String, Set<AnswerHandler>> handlers = new ConcurrentHashMap<String, Set<AnswerHandler>>();
-
-  /**
-   * Handler for Answers
-   */
-  public static interface AnswerHandler {
-    /**
-     * Called when a answer was created for a client
-     * 
-     * @param answer the Answer to send
-     * @return true when the answer could be send, false for example on ws-disconnect
-     */
-    boolean onAnswer(String answer);
-  }
+  private final ConcurrentHashMap<String, RpcPlusClient> clients = new ConcurrentHashMap<String, RpcPlusClient>();
 
   @Inject
   public RpcManagerServer(RequestMethodHandlerBasic basic, RequestMethodHandlerServerpush push,
       RequestMethodHandlerQueued queued) {
-    // TODO Configuratble
+    // TODO inject the executor
+    ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    // TODO make configurable
     this.requestMethodHandlers = new HashMap<>();
     this.requestMethodHandlers.put(basic.getRequestTypeName(), basic);
     this.requestMethodHandlers.put(push.getRequestTypeName(), push);
     this.requestMethodHandlers.put(queued.getRequestTypeName(), queued);
+    executor.scheduleAtFixedRate(new Runnable() {
+      @Override
+      public void run() {
+        Iterator<Entry<String, RpcPlusClient>> it = clients.entrySet().iterator();
+        while (it.hasNext()) {
+          Entry<String, RpcPlusClient> e = it.next();
+          if (e.getValue().isObsolete()) {
+            logger.info("Client timeouted: id={}", e.getKey());
+            e.getValue().disconnect();
+            it.remove();
+          }
+        }
+        logger.trace("Connected Clients: {}", clients.size());
+      }
+    }, 0, 30, TimeUnit.SECONDS);
   }
 
   public void onCall(final String clientId, String data, String contextPath, String permStrongName,
@@ -52,7 +60,20 @@ public class RpcManagerServer {
   }
 
   public void onCall(final String clientId, String data, HttpServletRequest req) {
-    final String id = data.substring(0, data.indexOf("#"));
+    logger.trace("Call from Client {}", data.substring(0, Math.min(data.length(), 150)));
+
+    if (data.equals("disconnect")) {
+      RpcPlusClient client = clients.remove(clientId);
+      if (client != null) {
+        client.disconnect();
+        logger.info("Client timeouted: id={}", clientId);
+      }
+      return;
+    }
+
+    get(clientId).touch();
+
+    final String requestId = data.substring(0, data.indexOf("#"));
     data = data.substring(data.indexOf("#") + 1);
     final String type = data.substring(0, data.indexOf("#"));
     data = data.substring(data.indexOf("#") + 1);
@@ -65,85 +86,37 @@ public class RpcManagerServer {
     h.process(service, data, req, new RequestMethodAnswerer() {
       @Override
       public void send(String answer) {
-        String response = id + "#" + answer;
+        String response = requestId + "#" + answer;
         answer(clientId, response);
       }
     });
   }
 
-  private void answer(final String clientId, String response) {
-    Set<AnswerHandler> set = handlers.get(clientId);
-    if (set != null)
-      for (AnswerHandler h : set) {
-        if (h.onAnswer(response))
-          return;
-      }
-
-
-    BlockingQueue<String> a = answers.get(clientId);
-    if (a == null) {
-      a = new LinkedBlockingQueue<String>();
-      BlockingQueue<String> a2 = answers.putIfAbsent(clientId, a);
-      a = a2 != null ? a2 : a;
+  private RpcPlusClient get(String clientId) {
+    RpcPlusClient client = clients.get(clientId);
+    if (client == null) {
+      client = new RpcPlusClient();
+      RpcPlusClient old = clients.putIfAbsent(clientId, client);
+      if (old != null)
+        return old;
+      logger.info("Client added: id={}", clientId);
     }
-    a.add(response);
+    return client;
   }
 
-  public HandlerRegistration addHandler(final String clientId, final AnswerHandler handler) {
-    Set<AnswerHandler> a = handlers.get(clientId);
-    if (a == null) {
-      a = Collections.newSetFromMap(new ConcurrentHashMap<AnswerHandler, Boolean>());
-      Set<AnswerHandler> a2 = handlers.putIfAbsent(clientId, a);
-      a = a2 != null ? a2 : a;
-    }
-    a.add(handler);
-    return new HandlerRegistration() {
-      @Override
-      public void removeHandler() {
-        Set<AnswerHandler> h = handlers.get(clientId);
-        h.remove(handler);
-      }
-    };
+  private void answer(final String clientId, String response) {
+    get(clientId).addResponse(response);
+  }
+
+  public HandlerRegistration addHandler(final String clientId, final RpcPlusClientHandler handler) {
+    return get(clientId).addHandler(handler);
   }
 
   public String getResponse(String clientId) {
-    BlockingQueue<String> a = answers.get(clientId);
-    try {
-      if (a != null)
-        return a.poll();
-      return null;
-    } finally {
-      // TODO Nicht mehr benötigte Queues aufräumen
-      // if (a.isEmpty()) {
-      // if (answers.remove(clientId, a)) {
-      // // Check for bad removing
-      // if (!a.isEmpty()) {
-      // BlockingQueue<String> a2 = answers.putIfAbsent(clientId, new BlockingArrayQueue<String>());
-      // }
-      // }
-      // }
-    }
+    return get(clientId).getResponse();
   }
 
   public String getResponse(String clientId, long timeout, TimeUnit unit) {
-    BlockingQueue<String> a = answers.get(clientId);
-    try {
-      if (a != null)
-        return a.poll(timeout, unit);
-    } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } finally {
-      // TODO Nicht mehr benötigte Queues aufräumen
-      // if (a.isEmpty()) {
-      // if (answers.remove(clientId, a)) {
-      // // Check for bad removing
-      // if (!a.isEmpty()) {
-      // BlockingQueue<String> a2 = answers.putIfAbsent(clientId, new BlockingArrayQueue<String>());
-      // }
-      // }
-      // }
-    }
-    return null;
+    return get(clientId).getResponse(timeout, unit);
   }
 }
