@@ -1,5 +1,7 @@
 package de.joe.core.rpc.client.impl;
 
+import java.util.HashMap;
+
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 
@@ -50,20 +52,46 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
       return serviceName;
     }
 
+    private int expectedAnswer = 0;
+    private final HashMap<Integer, String> queuedAnswers = new HashMap<Integer, String>();
+
+    /**
+     * ID of the next answer
+     * 
+     * Syntax:: a<ID>* -> answer f<ID>* -> lastanswer e* -> error
+     * 
+     */
     @Override
-    public void onAnswer(String response) {
-      assert (response.startsWith("a") || response.startsWith("f") || response.startsWith("e")) : "Illegal ServerPush protocol";
+    public void onAnswer(final String orgResponse) {
+      assert (orgResponse.startsWith("a") || orgResponse.startsWith("f") || orgResponse.startsWith("e")) : "Illegal ServerPush protocol";
 
-      if (response.startsWith("e") || response.startsWith("f")) {
-        removeRequest(this);
-      }
 
-      if (response.startsWith("e-")) {
-        response = response.substring(2);
-        callback.onError(null, new InternalServerException(response.substring(2)));
+      if (orgResponse.startsWith("e-")) {
+        callback.onError(null, new InternalServerException(orgResponse.substring(2)));
       } else {
-        ServerPushCallback.nextIsFinished = response.startsWith("f");
-        RequestHelper.process(callback, response.substring(1));
+        String response = orgResponse.substring(1);
+        int markerIndex = response.indexOf("#");
+        int answerId = Integer.parseInt(response.substring(0, markerIndex));
+        String data = response.substring(markerIndex + 1);
+
+        if (expectedAnswer != answerId) {
+          System.out.println("Unexpected Answer " + answerId + " (instead of " + expectedAnswer + ")");
+          queuedAnswers.put(answerId, orgResponse);
+        } else {
+          if (orgResponse.startsWith("e") || orgResponse.startsWith("f"))
+            removeRequest(this);
+
+          ServerPushCallback.nextIsFinished = orgResponse.startsWith("f");
+          System.out.println("Expected Answer " + expectedAnswer + ServerPushCallback.nextIsFinished + " -> "
+              + orgResponse.substring(0, 10));
+          RequestHelper.process(callback, data);
+          expectedAnswer++;
+          // Try adding the queued ones
+          if (!queuedAnswers.isEmpty() && queuedAnswers.containsKey(expectedAnswer)) {
+            // System.out.println("Late answer:: " + expectedAnswer);
+            onAnswer(queuedAnswers.remove(expectedAnswer));
+          }
+        }
       }
     }
 

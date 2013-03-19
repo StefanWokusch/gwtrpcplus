@@ -2,6 +2,7 @@ package de.joe.core.rpc.server;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -128,6 +129,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
       }
 
       Object[] params = new Object[rpcRequest.getParameters().length + 1];
+      final AtomicInteger nextAnswerId = new AtomicInteger(0);
       {
         int i = 0;
         for (Object o : rpcRequest.getParameters())
@@ -140,9 +142,11 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
               return;// Ignore Answer, already finished
             }
             try {
-              String answer = encoder.encodeResponseForSuccess(rpcRequest.getMethod(), obj,
+              final String answer = encoder.encodeResponseForSuccess(rpcRequest.getMethod(), obj,
                   rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
-              answerer.send("a" + answer);
+              final int answerId = nextAnswerId.getAndIncrement();
+
+              answerer.send("a" + answerId + "#" + answer);
             } catch (SerializationException e) {
               logger.error("Cant send Serverpush-Message to the Client", e);
             }
@@ -157,7 +161,8 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
             try {
               String answer = encoder.encodeResponseForSuccess(rpcRequest.getMethod(), obj,
                   rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
-              answerer.send("f" + answer);
+              int answerId = nextAnswerId.getAndIncrement();
+              answerer.send("f" + answerId + "#" + answer);
             } catch (SerializationException e) {
               logger.error("Cant send Serverpush-Message to the Client", e);
             }
@@ -173,7 +178,8 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
             try {
               String answer = encoder.encodeResponseForFailure(rpcRequest.getMethod(), caught,
                   rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
-              answerer.send("e" + answer);
+              final int answerId = nextAnswerId.getAndIncrement();
+              answerer.send("e" + answerId + "#" + answer);
             } catch (Throwable e) {
               logger.error("Can't Process Request because of thrown Exception at " + service + " with data " + data, e);
               answerer.send("e-" + e.getMessage());
