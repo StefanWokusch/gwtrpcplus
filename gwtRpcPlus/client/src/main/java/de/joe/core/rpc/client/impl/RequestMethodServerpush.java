@@ -57,14 +57,10 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
     /**
      * ID of the next answer
-     * 
-     * Syntax:: a<ID>* -> answer f<ID>* -> lastanswer e* -> error
-     * 
      */
     @Override
     public void onAnswer(final String orgResponse) {
       assert (orgResponse.startsWith("a") || orgResponse.startsWith("f") || orgResponse.startsWith("e")) : "Illegal ServerPush protocol";
-
 
       if (orgResponse.startsWith("e-")) {
         callback.onError(null, new InternalServerException(orgResponse.substring(2)));
@@ -75,15 +71,17 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
         String data = response.substring(markerIndex + 1);
 
         if (expectedAnswer != answerId) {
-          System.out.println("Unexpected Answer " + answerId + " (instead of " + expectedAnswer + ")");
+          // System.out.println("Unexpected Answer " + answerId + " (instead of " + expectedAnswer +
+          // ")");
           queuedAnswers.put(answerId, orgResponse);
         } else {
           if (orgResponse.startsWith("e") || orgResponse.startsWith("f"))
             removeRequest(this);
 
           ServerPushCallback.nextIsFinished = orgResponse.startsWith("f");
-          System.out.println("Expected Answer " + expectedAnswer + ServerPushCallback.nextIsFinished + " -> "
-              + orgResponse.substring(0, 10));
+          // System.out.println("Expected Answer " + expectedAnswer +
+          // ServerPushCallback.nextIsFinished + " -> "
+          // + orgResponse.substring(0, 10));
           RequestHelper.process(callback, data);
           expectedAnswer++;
           // Try adding the queued ones
