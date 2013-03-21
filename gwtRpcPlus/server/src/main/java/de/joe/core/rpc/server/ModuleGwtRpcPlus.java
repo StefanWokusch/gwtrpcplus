@@ -11,9 +11,10 @@ import com.google.inject.servlet.ServletModule;
 import de.joe.core.rpc.server.impl.GwtRpcPlusBasicServlet;
 import de.joe.core.rpc.server.impl.GwtRpcPlusWebsocket;
 import de.joe.core.rpc.server.impl.GwtRpcPlusWebsocketDummy;
+import de.joe.core.rpc.server.util.Logger;
 
 public class ModuleGwtRpcPlus extends ServletModule {
-  private final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ModuleGwtRpcPlus.class);
+  private final static Logger logger = new Logger(ModuleGwtRpcPlus.class);
 
   private final String modulename;
   private final Set<Class<? extends RemoteServiceServlet>> servletClasses;

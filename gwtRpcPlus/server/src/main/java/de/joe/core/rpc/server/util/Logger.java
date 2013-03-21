@@ -10,6 +10,40 @@ public class Logger {
 
   private static boolean logged = false;
 
+
+  public void error(String text, Object... objects) {
+    try {
+      org.slf4j.LoggerFactory.getLogger(clazz).error(text, objects);
+    } catch (NoClassDefFoundError ex) {
+      if (!logged) {
+        logged = true;
+        System.out.println("No slf4j found. No Logging available for GwtRpcPlus");
+      }
+    }
+  }
+
+  public void error(String text, Throwable e) {
+    try {
+      org.slf4j.LoggerFactory.getLogger(clazz).error(text, e);
+    } catch (NoClassDefFoundError ex) {
+      if (!logged) {
+        logged = true;
+        System.out.println("No slf4j found. No Logging available for GwtRpcPlus");
+      }
+    }
+  }
+
+  public void warn(String text, Object... objects) {
+    try {
+      org.slf4j.LoggerFactory.getLogger(clazz).warn(text, objects);
+    } catch (NoClassDefFoundError e) {
+      if (!logged) {
+        logged = true;
+        System.out.println("No slf4j found. No Logging available for GwtRpcPlus");
+      }
+    }
+  }
+
   public void info(String text, Object... objects) {
     try {
       org.slf4j.LoggerFactory.getLogger(clazz).info(text, objects);
@@ -43,14 +77,5 @@ public class Logger {
     }
   }
 
-  public void error(String text, Throwable e) {
-    try {
-      org.slf4j.LoggerFactory.getLogger(clazz).trace(text, e);
-    } catch (NoClassDefFoundError ex) {
-      if (!logged) {
-        logged = true;
-        System.out.println("No slf4j found. No Logging available for GwtRpcPlus");
-      }
-    }
-  }
+
 }

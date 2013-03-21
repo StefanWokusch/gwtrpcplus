@@ -7,10 +7,11 @@ import com.google.gwt.user.server.rpc.RPCRequest;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.inject.Inject;
 
+import de.joe.core.rpc.server.util.Logger;
 import de.joe.core.rpc.server.util.RpcHelper;
 
 public class RequestMethodHandlerBasic implements RequestMethodHandler {
-  private final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(RequestMethodHandlerBasic.class);
+  private final static Logger logger = new Logger(RequestMethodHandlerBasic.class);
 
   private final RpcHelper helper;
 

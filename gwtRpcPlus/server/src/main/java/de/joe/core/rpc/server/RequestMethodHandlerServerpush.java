@@ -13,12 +13,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 import com.google.inject.Inject;
 
+import de.joe.core.rpc.server.util.Logger;
 import de.joe.core.rpc.server.util.RpcHelper;
 import de.joe.core.rpc.shared.CancelHandler;
 import de.joe.core.rpc.shared.ReturnHandler;
 
 public class RequestMethodHandlerServerpush implements RequestMethodHandler {
-  private final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(RequestMethodHandlerServerpush.class);
+  private final static Logger logger = new Logger(RequestMethodHandlerServerpush.class);
 
   private final RpcHelper helper;
 

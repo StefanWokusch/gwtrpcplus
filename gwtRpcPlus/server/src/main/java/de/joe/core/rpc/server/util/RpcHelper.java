@@ -12,7 +12,7 @@ import com.google.inject.Injector;
 import de.joe.core.rpc.server.ServletList;
 
 public class RpcHelper {
-  private final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(RpcHelper.class);
+  private final static Logger logger = new Logger(RpcHelper.class);
 
   private final Injector injector;
   private final ServletList servletList;
