@@ -24,6 +24,7 @@ import de.joe.core.rpc.client.RequestMethod;
 import de.joe.core.rpc.client.RequestMethod.ConnectionHandler;
 import de.joe.core.rpc.client.RequestMethod.RequestPlus;
 import de.joe.core.rpc.client.util.MyTimer;
+import de.joe.core.rpc.client.util.MyWindow;
 import de.joe.core.rpc.client.RpcManagerClient;
 
 public class RpcManagerClientTest {
@@ -46,6 +47,8 @@ public class RpcManagerClientTest {
   RequestCallback gwtRpcCallback;
   @Mock
   MyTimer timer;
+  @Mock
+  MyWindow window;
 
   String lastAnswer = null;
 
@@ -113,7 +116,7 @@ public class RpcManagerClientTest {
           connection
         }));
       }
-    });
+    }, window);
     rpc.timer = timer;
     rpc.register(method);
     rpc.addHandler(rpcHandler);

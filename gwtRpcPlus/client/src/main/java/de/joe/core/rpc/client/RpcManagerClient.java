@@ -10,7 +10,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
 
@@ -18,6 +17,7 @@ import de.joe.core.rpc.client.Connection.RecieveHandler;
 import de.joe.core.rpc.client.RequestMethod.ConnectionHandler;
 import de.joe.core.rpc.client.RequestMethod.RequestPlus;
 import de.joe.core.rpc.client.util.MyTimer;
+import de.joe.core.rpc.client.util.MyWindow;
 
 /**
  * Api the proxies will call
@@ -79,7 +79,11 @@ public class RpcManagerClient {
   }
 
   public RpcManagerClient(ConnectionProvider prov) {
-    Window.addWindowClosingHandler(new ClosingHandler() {
+    this(prov, new MyWindow.DefaultWindow());
+  }
+
+  public RpcManagerClient(ConnectionProvider prov, MyWindow window) {
+    window.addWindowClosingHandler(new ClosingHandler() {
       @Override
       public void onWindowClosing(ClosingEvent event) {
         send("disconnect");

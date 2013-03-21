@@ -21,6 +21,7 @@ import de.joe.core.rpc.client.Connection;
 import de.joe.core.rpc.client.Connection.RecieveHandler;
 import de.joe.core.rpc.client.impl.RequestMethodBasic;
 import de.joe.core.rpc.client.util.MyTimer;
+import de.joe.core.rpc.client.util.MyWindow;
 import de.joe.core.rpc.client.ConnectionProvider;
 import de.joe.core.rpc.client.RequestMethod;
 import de.joe.core.rpc.client.RpcManagerClient;
@@ -46,6 +47,8 @@ public class RpcManagerClientConnectionsTest {
   RequestCallback requestCallback;
   @Mock
   MyTimer timer;
+  @Mock
+  MyWindow window;
 
   // Initialization
   @Before
@@ -108,7 +111,7 @@ public class RpcManagerClientConnectionsTest {
             conHighPrio, conMedPrio, conLowPrio
         }));
       }
-    });
+    }, window);
     rpc.timer = timer;
   }
 

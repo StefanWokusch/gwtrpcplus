@@ -133,7 +133,7 @@ public class RequestMethodHandlerServerpushTest {
     assertEquals(1, service.aliveHandlers.size());
     service.aliveHandlers.get(0).answer("a1");
 
-    verify(answerer).send(eq("a|OK|a1|"));
+    verify(answerer).send(eq("a0#|OK|a1|"));
   }
 
   @Test
@@ -142,7 +142,7 @@ public class RequestMethodHandlerServerpushTest {
 
     service.aliveHandlers.get(0).finish("a1");
 
-    verify(answerer).send(eq("f|OK|a1|"));
+    verify(answerer).send(eq("f0#|OK|a1|"));
   }
 
   @Test

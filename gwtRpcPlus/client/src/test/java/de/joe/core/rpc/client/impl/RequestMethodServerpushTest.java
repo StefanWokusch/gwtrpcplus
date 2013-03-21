@@ -98,7 +98,7 @@ public class RequestMethodServerpushTest {
   public void testSimpleAnswer() {
     method.call("reqData", callback);
 
-    allRequests.get(0).onAnswer("arespData");
+    allRequests.get(0).onAnswer("a0#respData");
 
     assertEquals(createStartData(), allRequests.get(0).getRequestString());
     verify(callback).onResponseReceived(any(Request.class), any(Response.class));
@@ -111,7 +111,7 @@ public class RequestMethodServerpushTest {
   public void testFinishAnswer() {
     method.call("reqData", callback);
 
-    allRequests.get(0).onAnswer("frespData");
+    allRequests.get(0).onAnswer("f0#respData");
 
     assertEquals(createStartData(), allRequests.get(0).getRequestString());
     verify(callback).onResponseReceived(any(Request.class), any(Response.class));
@@ -124,7 +124,7 @@ public class RequestMethodServerpushTest {
   public void testErrorAnswer() {
     method.call("reqData", callback);
 
-    allRequests.get(0).onAnswer("erespData");
+    allRequests.get(0).onAnswer("e0#respData");
 
     assertEquals(createStartData(), allRequests.get(0).getRequestString());
     verify(callback).onResponseReceived(any(Request.class), any(Response.class));
@@ -137,9 +137,9 @@ public class RequestMethodServerpushTest {
   public void testMultipleAnswersPending() {
     method.call("reqData", callback);
 
-    allRequests.get(0).onAnswer("a1");
-    allRequests.get(0).onAnswer("a2");
-    allRequests.get(0).onAnswer("a3");
+    allRequests.get(0).onAnswer("a0#1");
+    allRequests.get(0).onAnswer("a1#2");
+    allRequests.get(0).onAnswer("a2#3");
 
     assertEquals(1, requests.size());
   }
@@ -148,9 +148,9 @@ public class RequestMethodServerpushTest {
   public void testMultipleAnswersFinished() {
     method.call("reqData", callback);
 
-    allRequests.get(0).onAnswer("a1");
-    allRequests.get(0).onAnswer("a2");
-    allRequests.get(0).onAnswer("f3");
+    allRequests.get(0).onAnswer("a0#1");
+    allRequests.get(0).onAnswer("a1#2");
+    allRequests.get(0).onAnswer("f2#3");
 
     assertEquals(createStartData(), allRequests.get(0).getRequestString());
     assertNotNull(lastResponse);
