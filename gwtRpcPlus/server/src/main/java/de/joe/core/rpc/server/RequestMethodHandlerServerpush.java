@@ -91,8 +91,8 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
       data = data.substring(splitPoint + 1);
       start(uuid, service, data, request, answerer);
     } else if (data.startsWith("c")) {
-      data = data.substring(1);
-      CancelHandler cancelHandler = handlers.get(data);
+      String uuid= data.substring(1);
+      CancelHandler cancelHandler = handlers.get(uuid);
       if (cancelHandler != null)
         cancelHandler.onCancel();
     } else {

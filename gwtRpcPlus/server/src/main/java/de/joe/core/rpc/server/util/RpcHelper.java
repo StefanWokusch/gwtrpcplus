@@ -2,6 +2,7 @@ package de.joe.core.rpc.server.util;
 
 import java.lang.reflect.Field;
 
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.gwt.user.server.rpc.AbstractRemoteServiceServlet;
@@ -11,6 +12,7 @@ import com.google.inject.Injector;
 
 import de.joe.core.rpc.server.ServletList;
 
+@Singleton
 public class RpcHelper {
   private final static Logger logger = new Logger(RpcHelper.class);
 

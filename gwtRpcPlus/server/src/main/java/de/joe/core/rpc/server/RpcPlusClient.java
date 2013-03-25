@@ -25,16 +25,6 @@ public class RpcPlusClient {
 
   private long lastCall = System.currentTimeMillis();
 
-  public HandlerRegistration addHandler(final RpcPlusClientHandler handler) {
-    handlers.add(handler);
-    return new HandlerRegistration() {
-      @Override
-      public void removeHandler() {
-        handlers.remove(handler);
-      }
-    };
-  }
-
   /**
    * Handler for Answers
    */
@@ -48,12 +38,22 @@ public class RpcPlusClient {
     boolean onAnswer(String answer);
   }
 
+  public HandlerRegistration addHandler(final RpcPlusClientHandler handler) {
+    handlers.add(handler);
+    return new HandlerRegistration() {
+      @Override
+      public void removeHandler() {
+        handlers.remove(handler);
+      }
+    };
+  }
+
   /**
    * @return true when the Client isn't called the last time and can be cleaned
    */
   public boolean isObsolete() {
     // TODO Remove this check
-    // Dont remove when an active websocketconnection is established
+    // Don't remove when an active websocketconnection is established
     if (!handlers.isEmpty())
       return false;
 
