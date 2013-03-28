@@ -12,7 +12,7 @@ public interface MyTimer {
      * 
      * WARN: {@link GwtRpcPlusBasicServlet}s timeout-check
      */
-    private static final int TIMEOUT = 20000;
+    private static final int TIMEOUT = 30000;
 
     private Timer timer = new Timer() {
       @Override

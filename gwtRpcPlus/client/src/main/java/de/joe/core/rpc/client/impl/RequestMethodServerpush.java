@@ -60,7 +60,7 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
      */
     @Override
     public void onAnswer(final String orgResponse) {
-      assert (orgResponse.startsWith("a") || orgResponse.startsWith("f") || orgResponse.startsWith("e")) : "Illegal ServerPush protocol";
+      assert (orgResponse.startsWith("p") || orgResponse.startsWith("a") || orgResponse.startsWith("f") || orgResponse.startsWith("e")) : "Illegal ServerPush protocol";
 
       if (orgResponse.startsWith("e-")) {
         callback.onError(null, new InternalServerException(orgResponse.substring(2)));
@@ -78,11 +78,14 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
           if (orgResponse.startsWith("e") || orgResponse.startsWith("f"))
             removeRequest(this);
 
-          ServerPushCallback.nextIsFinished = orgResponse.startsWith("f");
-          // System.out.println("Expected Answer " + expectedAnswer +
-          // ServerPushCallback.nextIsFinished + " -> "
-          // + orgResponse.substring(0, 10));
-          RequestHelper.process(callback, data);
+          // Not a alive Ping
+          if (!orgResponse.startsWith("p")) {
+            ServerPushCallback.nextIsFinished = orgResponse.startsWith("f");
+            // System.out.println("Expected Answer " + expectedAnswer +
+            // ServerPushCallback.nextIsFinished + " -> "
+            // + orgResponse.substring(0, 10));
+            RequestHelper.process(callback, data);
+          }
           expectedAnswer++;
           // Try adding the queued ones
           if (!queuedAnswers.isEmpty() && queuedAnswers.containsKey(expectedAnswer)) {

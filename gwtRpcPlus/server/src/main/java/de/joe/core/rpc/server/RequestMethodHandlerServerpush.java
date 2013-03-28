@@ -2,6 +2,10 @@ package de.joe.core.rpc.server;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,11 +27,14 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
 
   private final RpcHelper helper;
 
-  // FIXME Add alive-ping to don't fire the timeout on the client side
+
   @Override
   public String getRequestTypeName() {
     return "p";
   }
+
+  // TODO inject the executor
+  private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
   @Inject
   public RequestMethodHandlerServerpush(RpcHelper helper) {
@@ -91,7 +98,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
       data = data.substring(splitPoint + 1);
       start(uuid, service, data, request, answerer);
     } else if (data.startsWith("c")) {
-      String uuid= data.substring(1);
+      String uuid = data.substring(1);
       CancelHandler cancelHandler = handlers.get(uuid);
       if (cancelHandler != null)
         cancelHandler.onCancel();
@@ -129,65 +136,77 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
         return;
       }
 
-      Object[] params = new Object[rpcRequest.getParameters().length + 1];
       final AtomicInteger nextAnswerId = new AtomicInteger(0);
-      {
-        int i = 0;
-        for (Object o : rpcRequest.getParameters())
-          params[i++] = o;
-        params[i] = new ReturnHandler() {
-          @Override
-          public void answer(Object obj) {
-            if (!handlers.containsKey(uuid)) {
-              logger.error("Can't send answer, ServerPush already ended");
-              return;// Ignore Answer, already finished
-            }
-            try {
-              final String answer = encoder.encodeResponseForSuccess(rpcRequest.getMethod(), obj,
-                  rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
-              final int answerId = nextAnswerId.getAndIncrement();
 
-              answerer.send("a" + answerId + "#" + answer);
-            } catch (SerializationException e) {
-              logger.error("Cant send Serverpush-Message to the Client", e);
-            }
-          }
+      // Add alive Pint
+      final ScheduledFuture<?> future = executor.scheduleWithFixedDelay(new Runnable() {
+        @Override
+        public void run() {
+          final int answerId = nextAnswerId.getAndIncrement();
+          answerer.send("p" + answerId + "#");
+        }
+      }, 20, 20, TimeUnit.SECONDS);
 
-          @Override
-          public void finish(Object obj) {
-            if (!handlers.containsKey(uuid)) {
-              logger.error("Can't send finish, ServerPush already ended");
-              return;// Ignore Answer, already finished
-            }
-            try {
-              String answer = encoder.encodeResponseForSuccess(rpcRequest.getMethod(), obj,
-                  rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
-              int answerId = nextAnswerId.getAndIncrement();
-              answerer.send("f" + answerId + "#" + answer);
-            } catch (SerializationException e) {
-              logger.error("Cant send Serverpush-Message to the Client", e);
-            }
-          }
 
-          @Override
-          public void abort(Exception caught) {
-            if (!handlers.containsKey(uuid)) {
-              logger.error("Can't send abort, ServerPush already ended");
-              return;// Ignore Answer, already finished
-            }
-            handlers.remove(uuid);
-            try {
-              String answer = encoder.encodeResponseForFailure(rpcRequest.getMethod(), caught,
-                  rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
-              final int answerId = nextAnswerId.getAndIncrement();
-              answerer.send("e" + answerId + "#" + answer);
-            } catch (Throwable e) {
-              logger.error("Can't Process Request because of thrown Exception at " + service + " with data " + data, e);
-              answerer.send("e-" + e.getMessage());
-            }
+      Object[] params = new Object[rpcRequest.getParameters().length + 1];
+      int i = 0;
+      for (Object o : rpcRequest.getParameters())
+        params[i++] = o;
+      params[i] = new ReturnHandler() {
+        @Override
+        public void answer(Object obj) {
+          if (!handlers.containsKey(uuid)) {
+            logger.error("Can't send answer, ServerPush already ended");
+            return;// Ignore Answer, already finished
           }
-        };
-      }
+          try {
+            final String answer = encoder.encodeResponseForSuccess(rpcRequest.getMethod(), obj,
+                rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
+            final int answerId = nextAnswerId.getAndIncrement();
+
+            answerer.send("a" + answerId + "#" + answer);
+          } catch (SerializationException e) {
+            logger.error("Cant send Serverpush-Message to the Client", e);
+          }
+        }
+
+        @Override
+        public void finish(Object obj) {
+          if (!handlers.containsKey(uuid)) {
+            logger.error("Can't send finish, ServerPush already ended");
+            return;// Ignore Answer, already finished
+          }
+          handlers.remove(uuid);
+          future.cancel(true);
+          try {
+            String answer = encoder.encodeResponseForSuccess(rpcRequest.getMethod(), obj,
+                rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
+            int answerId = nextAnswerId.getAndIncrement();
+            answerer.send("f" + answerId + "#" + answer);
+          } catch (SerializationException e) {
+            logger.error("Cant send Serverpush-Message to the Client", e);
+          }
+        }
+
+        @Override
+        public void abort(Exception caught) {
+          if (!handlers.containsKey(uuid)) {
+            logger.error("Can't send abort, ServerPush already ended");
+            return;// Ignore Answer, already finished
+          }
+          handlers.remove(uuid);
+          future.cancel(true);
+          try {
+            String answer = encoder.encodeResponseForFailure(rpcRequest.getMethod(), caught,
+                rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
+            final int answerId = nextAnswerId.getAndIncrement();
+            answerer.send("e" + answerId + "#" + answer);
+          } catch (Throwable e) {
+            logger.error("Can't Process Request because of thrown Exception at " + service + " with data " + data, e);
+            answerer.send("e-" + e.getMessage());
+          }
+        }
+      };
       CancelHandlerWrapper myCancelHandler = new CancelHandlerWrapper();
       handlers.put(uuid, myCancelHandler);
       CancelHandler handler = (CancelHandler) toCall.invoke(servlet, params);
