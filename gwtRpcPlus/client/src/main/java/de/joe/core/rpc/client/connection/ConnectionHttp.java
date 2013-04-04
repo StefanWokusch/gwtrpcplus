@@ -140,9 +140,10 @@ public class ConnectionHttp extends AbstractConnection {
   private final RequestBuilder longPushService;
 
   public ConnectionHttp() {
-    service = new RpcRequestBuilder().create(GWT.getModuleBaseURL() + "gwtRpcPlusBasic").finish();
+    String hostpage = GWT.getHostPageBaseURL() + GWT.getModuleName() + "/gwtRpcPlusBasic";
+    service = new RpcRequestBuilder().create(hostpage).finish();
     service.setHeader("clientId", Client.id);
-    longPushService = new RpcRequestBuilder().create(GWT.getModuleBaseURL() + "gwtRpcPlusBasic").finish();
+    longPushService = new RpcRequestBuilder().create(hostpage).finish();
     longPushService.setHeader("clientId", Client.id);
     longPushService.setHeader("longpush", "true");
   }
