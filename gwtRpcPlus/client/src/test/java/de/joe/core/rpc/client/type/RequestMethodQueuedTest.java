@@ -1,4 +1,4 @@
-package de.joe.core.rpc.client.impl;
+package de.joe.core.rpc.client.type;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
@@ -20,6 +20,7 @@ import com.google.gwt.http.client.Response;
 
 import de.joe.core.rpc.client.RequestMethod.ConnectionHandler;
 import de.joe.core.rpc.client.RequestMethod.RequestPlus;
+import de.joe.core.rpc.client.type.RequestMethodQueued;
 import de.joe.core.rpc.client.util.MyScheduler;
 import de.joe.core.rpc.shared.PrioritisedRequest;
 

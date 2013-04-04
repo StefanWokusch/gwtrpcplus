@@ -1,4 +1,4 @@
-package de.joe.core.rpc.server;
+package de.joe.core.rpc.server.impl;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,8 +14,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.google.gwt.event.shared.HandlerRegistration;
 
-import de.joe.core.rpc.server.RequestMethodHandler.RequestMethodAnswerer;
-import de.joe.core.rpc.server.RpcPlusClient.RpcPlusClientHandler;
+import de.joe.core.rpc.server.impl.RpcPlusClient.RpcPlusClientHandler;
+import de.joe.core.rpc.server.type.RequestMethodHandler;
+import de.joe.core.rpc.server.type.RequestMethodHandlerBasic;
+import de.joe.core.rpc.server.type.RequestMethodHandlerQueued;
+import de.joe.core.rpc.server.type.RequestMethodHandlerServerpush;
+import de.joe.core.rpc.server.type.RequestMethodHandler.RequestMethodAnswerer;
 import de.joe.core.rpc.server.util.HttpServletRequestMinimum;
 import de.joe.core.rpc.server.util.Logger;
 

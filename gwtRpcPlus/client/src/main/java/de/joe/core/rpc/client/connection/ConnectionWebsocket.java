@@ -1,11 +1,12 @@
-package de.joe.core.rpc.client.impl;
+package de.joe.core.rpc.client.connection;
 
 import com.google.gwt.core.client.GWT;
 
 import de.joe.core.rpc.client.RpcManagerClient;
+import de.joe.core.rpc.client.impl.AbstractConnection;
 import de.joe.core.rpc.client.util.Client;
-import de.joe.core.rpc.client.websocket.WebSocket.Callback;
-import de.joe.core.rpc.client.websocket.WebSocketKeepOnline;
+import de.joe.core.rpc.client.util.websocket.WebSocketKeepOnline;
+import de.joe.core.rpc.client.util.websocket.WebSocket.Callback;
 
 public class ConnectionWebsocket extends AbstractConnection {
 

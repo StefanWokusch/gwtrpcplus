@@ -1,4 +1,4 @@
-package de.joe.core.rpc.server.impl;
+package de.joe.core.rpc.server.servlet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.gwt.user.server.rpc.RPCServletUtils;
 import com.google.inject.Inject;
 
-import de.joe.core.rpc.server.RpcManagerServer;
+import de.joe.core.rpc.server.impl.RpcManagerServer;
 
 /**
  * Bind this to /$modulename$/gwtrpcplus

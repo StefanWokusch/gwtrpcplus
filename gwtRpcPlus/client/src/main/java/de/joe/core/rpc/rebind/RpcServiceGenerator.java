@@ -11,9 +11,9 @@ import com.google.gwt.user.rebind.rpc.ServiceInterfaceProxyGenerator;
 
 import de.joe.core.rpc.client.RequestMethod;
 import de.joe.core.rpc.client.impl.GwtRpcProxy;
-import de.joe.core.rpc.client.impl.RequestMethodBasic;
-import de.joe.core.rpc.client.impl.RequestMethodQueued;
-import de.joe.core.rpc.client.impl.RequestMethodServerpush;
+import de.joe.core.rpc.client.type.RequestMethodBasic;
+import de.joe.core.rpc.client.type.RequestMethodQueued;
+import de.joe.core.rpc.client.type.RequestMethodServerpush;
 import de.joe.core.rpc.shared.Queued;
 import de.joe.core.rpc.shared.ResendAllowed;
 import de.joe.core.rpc.shared.ServerPush;

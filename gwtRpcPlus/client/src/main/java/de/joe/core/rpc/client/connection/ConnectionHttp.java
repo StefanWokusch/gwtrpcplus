@@ -1,4 +1,4 @@
-package de.joe.core.rpc.client.impl;
+package de.joe.core.rpc.client.connection;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
@@ -9,6 +9,7 @@ import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 
 import de.joe.core.rpc.client.RpcManagerClient;
+import de.joe.core.rpc.client.impl.AbstractConnection;
 import de.joe.core.rpc.client.util.Client;
 
 public class ConnectionHttp extends AbstractConnection {

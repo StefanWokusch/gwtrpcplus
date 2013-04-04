@@ -1,4 +1,4 @@
-package de.joe.core.rpc.client.impl;
+package de.joe.core.rpc.client.type;
 
 import java.util.PriorityQueue;
 
@@ -6,6 +6,7 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 
+import de.joe.core.rpc.client.impl.AbstractRequestMethod;
 import de.joe.core.rpc.client.util.MyScheduler;
 import de.joe.core.rpc.client.util.RequestHelper;
 import de.joe.core.rpc.shared.InternalServerException;

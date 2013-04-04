@@ -1,4 +1,4 @@
-package de.joe.core.rpc.server;
+package de.joe.core.rpc.server.type;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
@@ -18,8 +18,9 @@ import com.google.gwt.user.server.rpc.RPCRequest;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.gwt.user.server.rpc.SerializationPolicy;
 
-import de.joe.core.rpc.server.RequestMethodHandler.RequestMethodAnswerer;
-import de.joe.core.rpc.server.RequestMethodHandlerServerpush.RPCInterface;
+import de.joe.core.rpc.server.type.RequestMethodHandlerServerpush;
+import de.joe.core.rpc.server.type.RequestMethodHandler.RequestMethodAnswerer;
+import de.joe.core.rpc.server.type.RequestMethodHandlerServerpush.RPCInterface;
 import de.joe.core.rpc.server.util.RpcHelper;
 import de.joe.core.rpc.shared.CancelHandler;
 import de.joe.core.rpc.shared.ReturnHandler;

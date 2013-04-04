@@ -1,4 +1,4 @@
-package de.joe.core.rpc.client.websocket;
+package de.joe.core.rpc.client.util.websocket;
 
 import com.google.gwt.user.client.Timer;
 

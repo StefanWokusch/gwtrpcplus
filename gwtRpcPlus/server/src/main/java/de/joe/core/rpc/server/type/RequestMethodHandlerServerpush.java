@@ -1,4 +1,4 @@
-package de.joe.core.rpc.server;
+package de.joe.core.rpc.server.type;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;

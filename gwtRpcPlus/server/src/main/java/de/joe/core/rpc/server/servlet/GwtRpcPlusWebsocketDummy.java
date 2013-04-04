@@ -1,4 +1,4 @@
-package de.joe.core.rpc.server.impl;
+package de.joe.core.rpc.server.servlet;
 
 import java.io.IOException;
 

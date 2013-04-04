@@ -2,7 +2,7 @@ package de.joe.core.rpc.client.util;
 
 import com.google.gwt.user.client.Timer;
 
-import de.joe.core.rpc.server.impl.GwtRpcPlusBasicServlet;
+import de.joe.core.rpc.server.servlet.GwtRpcPlusBasicServlet;
 
 public interface MyTimer {
 

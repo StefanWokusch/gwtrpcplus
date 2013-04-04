@@ -1,4 +1,4 @@
-package de.joe.core.rpc.server;
+package de.joe.core.rpc.server.impl;
 
 import java.util.Collections;
 import java.util.Set;

@@ -15,8 +15,8 @@ import com.google.gwt.user.rebind.ClassSourceFileComposerFactory;
 import com.google.gwt.user.rebind.SourceWriter;
 
 import de.joe.core.rpc.client.Connection;
-import de.joe.core.rpc.client.impl.ConnectionHttp;
-import de.joe.core.rpc.client.impl.ConnectionWebsocket;
+import de.joe.core.rpc.client.connection.ConnectionHttp;
+import de.joe.core.rpc.client.connection.ConnectionWebsocket;
 
 public class ConnectionProviderGenerator extends Generator {
   public String generate(TreeLogger logger, GeneratorContext context, String typeName) throws UnableToCompleteException {

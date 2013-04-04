@@ -1,4 +1,4 @@
-package de.joe.core.rpc.server;
+package de.joe.core.rpc.server.type;
 
 import javax.servlet.http.HttpServletRequest;
 

@@ -19,7 +19,7 @@ import com.google.gwt.http.client.RequestCallback;
 
 import de.joe.core.rpc.client.Connection;
 import de.joe.core.rpc.client.Connection.RecieveHandler;
-import de.joe.core.rpc.client.impl.RequestMethodBasic;
+import de.joe.core.rpc.client.type.RequestMethodBasic;
 import de.joe.core.rpc.client.util.MyTimer;
 import de.joe.core.rpc.client.util.MyWindow;
 import de.joe.core.rpc.client.ConnectionProvider;

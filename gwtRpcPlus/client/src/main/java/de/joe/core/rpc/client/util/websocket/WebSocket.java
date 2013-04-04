@@ -1,4 +1,4 @@
-package de.joe.core.rpc.client.websocket;
+package de.joe.core.rpc.client.util.websocket;
 
 import com.google.gwt.core.client.GWT;
 
@@ -81,37 +81,37 @@ public class WebSocket {
     	var that = this;
     	
     	if("WebSocket" in $wnd)
-    		this.@de.joe.core.rpc.client.websocket.WebSocket::ws = new WebSocket(serverUrl);
+    		this.@de.joe.core.rpc.client.util.websocket.WebSocket::ws = new WebSocket(serverUrl);
     	else
-    		this.@de.joe.core.rpc.client.websocket.WebSocket::ws = new MozWebSocket(serverUrl);
+    		this.@de.joe.core.rpc.client.util.websocket.WebSocket::ws = new MozWebSocket(serverUrl);
     		
 
-        this.@de.joe.core.rpc.client.websocket.WebSocket::ws.onopen = function() {
-             that.@de.joe.core.rpc.client.websocket.WebSocket::onopen()();
+        this.@de.joe.core.rpc.client.util.websocket.WebSocket::ws.onopen = function() {
+             that.@de.joe.core.rpc.client.util.websocket.WebSocket::onopen()();
         };
-        this.@de.joe.core.rpc.client.websocket.WebSocket::ws.onmessage = function(response) {
+        this.@de.joe.core.rpc.client.util.websocket.WebSocket::ws.onmessage = function(response) {
             if (response.data) {
-                that.@de.joe.core.rpc.client.websocket.WebSocket::onmessage(Ljava/lang/String;)( response.data );
+                that.@de.joe.core.rpc.client.util.websocket.WebSocket::onmessage(Ljava/lang/String;)( response.data );
             }
         };
-        this.@de.joe.core.rpc.client.websocket.WebSocket::ws.onclose = function(m) {
-             that.@de.joe.core.rpc.client.websocket.WebSocket::onclose()();
+        this.@de.joe.core.rpc.client.util.websocket.WebSocket::ws.onclose = function(m) {
+             that.@de.joe.core.rpc.client.util.websocket.WebSocket::onclose()();
         };
-        this.@de.joe.core.rpc.client.websocket.WebSocket::ws.onerror = function(m) {
-             that.@de.joe.core.rpc.client.websocket.WebSocket::onerror(Ljava/lang/Object;)(m);
+        this.@de.joe.core.rpc.client.util.websocket.WebSocket::ws.onerror = function(m) {
+             that.@de.joe.core.rpc.client.util.websocket.WebSocket::onerror(Ljava/lang/Object;)(m);
         };
     }-*/;
 
     public native void send(String message) /*-{
-        if (this.@de.joe.core.rpc.client.websocket.WebSocket::ws) {
-            this.@de.joe.core.rpc.client.websocket.WebSocket::ws.send(message);
+        if (this.@de.joe.core.rpc.client.util.websocket.WebSocket::ws) {
+            this.@de.joe.core.rpc.client.util.websocket.WebSocket::ws.send(message);
         } else {
-            alert("not connected!" + this.@de.joe.core.rpc.client.websocket.WebSocket::ws);
+            alert("not connected!" + this.@de.joe.core.rpc.client.util.websocket.WebSocket::ws);
         }
     }-*/;
 
     public native void close() /*-{
-        this.@de.joe.core.rpc.client.websocket.WebSocket::ws.close();
+        this.@de.joe.core.rpc.client.util.websocket.WebSocket::ws.close();
     }-*/;
 
 }

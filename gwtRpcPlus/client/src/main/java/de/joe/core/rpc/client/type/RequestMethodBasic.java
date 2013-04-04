@@ -1,8 +1,9 @@
-package de.joe.core.rpc.client.impl;
+package de.joe.core.rpc.client.type;
 
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 
+import de.joe.core.rpc.client.impl.AbstractRequestMethod;
 import de.joe.core.rpc.client.util.RequestHelper;
 import de.joe.core.rpc.shared.InternalServerException;
 import de.joe.core.rpc.shared.TimeoutException;

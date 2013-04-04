@@ -1,4 +1,4 @@
-package de.joe.core.rpc.server.impl;
+package de.joe.core.rpc.server.servlet;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -24,8 +24,8 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.inject.Singleton;
 
-import de.joe.core.rpc.server.RpcManagerServer;
-import de.joe.core.rpc.server.RpcPlusClient.RpcPlusClientHandler;
+import de.joe.core.rpc.server.impl.RpcManagerServer;
+import de.joe.core.rpc.server.impl.RpcPlusClient.RpcPlusClientHandler;
 import de.joe.core.rpc.server.util.Logger;
 
 @Singleton

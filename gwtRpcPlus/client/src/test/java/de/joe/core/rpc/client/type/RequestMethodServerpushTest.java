@@ -1,4 +1,4 @@
-package de.joe.core.rpc.client.impl;
+package de.joe.core.rpc.client.type;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
@@ -21,6 +21,7 @@ import com.google.gwt.http.client.Response;
 import de.joe.core.rpc.client.RequestMethod;
 import de.joe.core.rpc.client.RequestMethod.ConnectionHandler;
 import de.joe.core.rpc.client.RequestMethod.RequestPlus;
+import de.joe.core.rpc.client.type.RequestMethodServerpush;
 import de.joe.core.rpc.client.util.UUID;
 
 public class RequestMethodServerpushTest {

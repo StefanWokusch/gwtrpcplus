@@ -8,9 +8,9 @@ import java.util.Set;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.inject.servlet.ServletModule;
 
-import de.joe.core.rpc.server.impl.GwtRpcPlusBasicServlet;
-import de.joe.core.rpc.server.impl.GwtRpcPlusWebsocket;
-import de.joe.core.rpc.server.impl.GwtRpcPlusWebsocketDummy;
+import de.joe.core.rpc.server.servlet.GwtRpcPlusBasicServlet;
+import de.joe.core.rpc.server.servlet.GwtRpcPlusWebsocket;
+import de.joe.core.rpc.server.servlet.GwtRpcPlusWebsocketDummy;
 import de.joe.core.rpc.server.util.Logger;
 
 public class ModuleGwtRpcPlus extends ServletModule {
