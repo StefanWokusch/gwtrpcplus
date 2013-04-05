@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.joe.core</groupId>
+	<groupId>com.googlecode.gwtrpcplus</groupId>
 	<artifactId>gwtRpcPlus</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Joe GwtRpc</name>
@@ -9,6 +9,14 @@
 	<description>Extended Gwt-Rpc</description>
 
 	<packaging>pom</packaging>
+
+	<licenses>
+		<license>
+			<name>Apache License 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,7 +26,6 @@
 		<guice.version>3.0</guice.version>
 		<slf4j.version>1.7.2</slf4j.version>
 	</properties>
-
 
 	<scm>
 		<connection>scm:git:https://code.google.com/p/gwtrpcplus/</connection>
@@ -51,6 +58,7 @@
 			<email>d.waas@levigo.de</email>
 		</developer>
 	</developers>
+	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -129,19 +137,6 @@
 
 	<build>
 		<plugins>
-			<!-- Fix Bug, that emul files are added to jar -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<excludes>
-						<exclude>java/**/*</exclude>
-						<exclude>sun/**/*</exclude>
-						<exclude>Emul.gwt.xml</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -183,7 +178,6 @@
 					<execution>
 						<goals>
 							<goal>resources</goal>
-							<goal>test</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -210,8 +204,8 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<username>${gwt-awt.googlecode.username}</username>
-					<password>${gwt-awt.googlecode.password}</password>
+					<username>${gwtRpcPlus.googlecode.username}</username>
+					<password>${gwtRpcPlus.googlecode.password}</password>
 					<preparationGoals>clean</preparationGoals>
 					<!-- <pushChanges>false</pushChanges> -->
 					<!-- <localCheckout>true</localCheckout> -->
@@ -235,9 +229,9 @@
 						<artifactId>maven-gpg-plugin</artifactId>
 						<version>1.1</version>
 						<configuration>
-							<homedir>${gwt-awt.gpg.homedir}</homedir>
-							<keyname>${gwt-awt.gpg.keyname}</keyname>
-							<passphrase>${gwt-awt.gpg.passphrase}</passphrase>
+							<homedir>${gwtrpcplus.gpg.homedir}</homedir>
+							<keyname>${gwtrpcplus.gpg.keyname}</keyname>
+							<passphrase>${gwtrpcplus.gpg.passphrase}</passphrase>
 						</configuration>
 						<executions>
 							<execution>

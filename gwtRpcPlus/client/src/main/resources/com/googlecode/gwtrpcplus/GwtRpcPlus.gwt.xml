@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+	<inherits name='com.google.gwt.user.User' />
+	<inherits name='com.google.gwt.rpc.RPC' />
+	<inherits name='com.googlecode.gwtrpcplus.GwtRpcPlusServer' />
+
+	<source path='client' />
+
+	<generate-with class="com.googlecode.gwtrpcplus.rebind.RpcServiceGenerator">
+		<when-type-assignable class="com.google.gwt.user.client.rpc.RemoteService" />
+	</generate-with>
+
+
+
+	<generate-with class="com.googlecode.gwtrpcplus.rebind.ConnectionProviderGenerator">
+		<when-type-assignable class="com.googlecode.gwtrpcplus.client.ConnectionProvider" />
+	</generate-with>
+
+
+	<define-configuration-property name="gwtrpcplus_websockets_enabled" is_multi_valued="false"/>
+	<set-configuration-property name="gwtrpcplus_websockets_enabled" value="false" />
+
+	
+  	<define-property name="gwtrpcplus_UseRemoteService" values="TRUE,FALSE" />
+	<set-property name="gwtrpcplus_UseRemoteService" value="FALSE" />
+
+
+	<generate-with class="com.googlecode.gwtrpcplus.rebind.RpcServiceGenerator">
+		<when-type-assignable class="com.google.gwt.user.client.rpc.RemoteService" />
+    	<when-property-is name="gwtrpcplus_UseRemoteService" value="TRUE" />
+	</generate-with>
+
+	<generate-with class="com.googlecode.gwtrpcplus.rebind.RpcServiceGenerator">
+		<when-type-assignable class="com.googlecode.gwtrpcplus.shared.RemoteServicePlus" />
+	</generate-with>
+</module>

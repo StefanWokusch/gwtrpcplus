@@ -3,17 +3,17 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<artifactId>gwtRpcPlus</artifactId>
-		<groupId>de.joe.core</groupId>
+		<groupId>com.googlecode.gwtrpcplus</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>gwtRpcPlusClient</artifactId>
-	<name>Joe GwtRpc - Client</name>
-	<description>Client teil</description>
+	<name>GwtRpcPlus - Client</name>
+	<description>GWT-Part of the Project</description>
 	
 	<dependencies>
 		<dependency>
-			<groupId>de.joe.core</groupId>
+			<groupId>com.googlecode.gwtrpcplus</groupId>
 			<artifactId>gwtRpcPlusServer</artifactId>
 		</dependency>
 		<dependency>

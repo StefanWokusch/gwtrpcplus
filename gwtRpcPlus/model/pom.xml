@@ -3,12 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<artifactId>gwtRpcPlus</artifactId>
-		<groupId>de.joe.core</groupId>
+		<groupId>com.googlecode.gwtrpcplus</groupId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>gwtRpcPlusModel</artifactId>
-	<name>Joe GwtRpc - Model</name>
+	<name>GwtRpcPlus - Model</name>
+	<description>Shared part of GwtRpcPlus</description>
 	
 	<dependencies>
 		<dependency>
