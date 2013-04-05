@@ -22,7 +22,7 @@
 
 	
   	<define-property name="gwtrpcplus_UseRemoteService" values="TRUE,FALSE" />
-	<set-property name="gwtrpcplus_UseRemoteService" value="TRUE" />
+	<set-property name="gwtrpcplus_UseRemoteService" value="FALSE" />
 
 
 	<generate-with class="de.joe.core.rpc.rebind.RpcServiceGenerator">
