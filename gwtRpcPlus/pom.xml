@@ -4,7 +4,7 @@
 	<groupId>com.googlecode.gwtrpcplus</groupId>
 	<artifactId>gwtRpcPlus</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Joe GwtRpc</name>
+	<name>GwtRpcPlus</name>
 
 	<description>Extended Gwt-Rpc</description>
 
