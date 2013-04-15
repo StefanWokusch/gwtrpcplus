@@ -225,24 +225,24 @@
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.1</version>
-						<configuration>
-							<homedir>${gwtRpcPlus.gpg.homedir}</homedir>
-							<keyname>${gwtRpcPlus.gpg.keyname}</keyname>
-							<passphrase>${gwtRpcPlus.gpg.passphrase}</passphrase>
-						</configuration>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.4</version>
+            <configuration>
+              <homedir>${gwtRpcPlus.gpg.homedir}</homedir>
+              <keyname>${gwtRpcPlus.gpg.keyname}</keyname>
+              <passphrase>${gwtRpcPlus.gpg.passphrase}</passphrase>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
 				</plugins>
 			</build>
 		</profile>
