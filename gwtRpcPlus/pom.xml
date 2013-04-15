@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.googlecode.gwtrpcplus</groupId>
 	<artifactId>gwtRpcPlus</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>GwtRpcPlus</name>
   <description>Extended Gwt-Rpc</description>
   <url>http://code.google.com/p/gwtrpcplus/</url>
@@ -31,7 +30,8 @@
 		<connection>scm:git:https://code.google.com/p/gwtrpcplus/</connection>
 		<developerConnection>scm:git:https://code.google.com/p/gwtrpcplus/</developerConnection>
 		<url>https://code.google.com/p/gwtrpcplus/</url>
-	</scm>
+	  <tag>gwtRpcPlus-0.0.1</tag>
+  </scm>
 
 	<distributionManagement>
 		<snapshotRepository>
