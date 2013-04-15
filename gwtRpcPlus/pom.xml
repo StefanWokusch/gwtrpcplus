@@ -229,9 +229,9 @@
 						<artifactId>maven-gpg-plugin</artifactId>
 						<version>1.1</version>
 						<configuration>
-							<homedir>${gwtrpcplus.gpg.homedir}</homedir>
-							<keyname>${gwtrpcplus.gpg.keyname}</keyname>
-							<passphrase>${gwtrpcplus.gpg.passphrase}</passphrase>
+							<homedir>${gwtRpcPlus.gpg.homedir}</homedir>
+							<keyname>${gwtRpcPlus.gpg.keyname}</keyname>
+							<passphrase>${gwtRpcPlus.gpg.passphrase}</passphrase>
 						</configuration>
 						<executions>
 							<execution>
