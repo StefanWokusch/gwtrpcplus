@@ -252,5 +252,6 @@
 		<module>model</module>
 		<module>server</module>
 		<module>client</module>
+		<module>websocketsjetty</module>
 	</modules>
 </project>

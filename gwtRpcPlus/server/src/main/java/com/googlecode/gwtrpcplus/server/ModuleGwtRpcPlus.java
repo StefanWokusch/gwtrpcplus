@@ -5,10 +5,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServlet;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.google.inject.servlet.ServletModule;
 import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusBasicServlet;
-import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusWebsocket;
 import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusWebsocketDummy;
 import com.googlecode.gwtrpcplus.server.util.Logger;
 
@@ -46,15 +47,13 @@ public class ModuleGwtRpcPlus extends ServletModule {
   @Override
   protected void configureServlets() {
     // WebsocketConnection
-    try {
-      addWebsockets();
-    } catch (Throwable e) {
-      logger.trace("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception", e);
-      logger.warn("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception:" + e.getClass().getName()
-          + " :: " + e.getMessage());
-      // Serve with dummy, returning a NotImplemented-State
+    boolean websocketsAdded = addWebsockets();
+
+    // Serve with dummy, returning a NotImplemented-State
+    if (!websocketsAdded) {
       serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocketDummy.class);
     }
+
     // ConnectionBasic
     serve("/" + modulename + "/gwtRpcPlusBasic").with(GwtRpcPlusBasicServlet.class);
 
@@ -66,17 +65,30 @@ public class ModuleGwtRpcPlus extends ServletModule {
     });
   }
 
-  private void addWebsockets() throws Throwable {
-    // Check for correct Jetty Version
-    if (!getServletContext().getServerInfo().startsWith("jetty/9.")) {
-      throw new RuntimeException("Only supported in jetty 9 yet (working since jetty 9.0.0.M3), but was "
-          + getServletContext().getServerInfo());
+  private boolean addWebsockets() {
+    try {
+      @SuppressWarnings("unchecked")
+      Class<? extends HttpServlet> c = (Class<? extends HttpServlet>) Class.forName("com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusWebsocket");
 
+      // Check for correct Jetty Version
+      if (!getServletContext().getServerInfo().startsWith("jetty/9.")) {
+        throw new RuntimeException("Only supported in jetty 9 yet (working since jetty 9.0.0), but was "
+            + getServletContext().getServerInfo());
+      }
+
+      // Try adding the WebsocketServlet
+      Map<String, String> params = new HashMap<String, String>();
+      params.put("bufferSize", "100000");
+      serve("/" + modulename + "/gwtRpcPlusWebsocket").with(c, params);
+      return true;
+    } catch (ClassNotFoundException e) {
+      // Ignore when not added
+      return false;
+    } catch (Throwable e) {
+      logger.trace("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception", e);
+      logger.warn("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception:" + e.getClass().getName()
+          + " :: " + e.getMessage());
+      return false;
     }
-
-    // Try adding the WebsocketServlet
-    Map<String, String> params = new HashMap<String, String>();
-    params.put("bufferSize", "100000");
-    serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocket.class, params);
   }
 }
