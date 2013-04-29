@@ -4,8 +4,8 @@
 	<artifactId>gwtRpcPlus</artifactId>
 	<version>0.0.2-SNAPSHOT</version>
 	<name>GwtRpcPlus</name>
-
-	<description>Extended Gwt-Rpc</description>
+  <description>Extended Gwt-Rpc</description>
+  <url>http://code.google.com/p/gwtrpcplus/</url>
 
 	<packaging>pom</packaging>
 
