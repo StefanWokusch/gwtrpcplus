@@ -16,7 +16,6 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.eclipse.jetty.websocket.api.extensions.ExtensionConfig;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
@@ -55,17 +54,9 @@ public class GwtRpcPlusWebsocket extends WebSocketServlet {
     factory.setCreator(new WebSocketCreator() {
       @Override
       public Object createWebSocket(UpgradeRequest req, UpgradeResponse resp) {
-        // Stop Webkit by connecting with deflateFrame because of bug in Jetty 9.0.0.M3
-        for (ExtensionConfig e : req.getExtensions())
-          if (e.getName().equals("x-webkit-deflate-frame"))
-            throw new RuntimeException("Cant support deflate frames");
         return provider.get().init(currentRequest.get().getContextPath());
       }
     });
-    // Jetty Bug #395444 https://bugs.eclipse.org/bugs/show_bug.cgi?id=395444
-    // Fix failed with a nullpointer exception at Jetty 9.0.0.M3
-    // Fix not working with Jetty 9.0.0.M2 and Chrome 23-25A
-    // factory.getExtensionFactory().unregister("x-webkit-deflate-frame");
   }
 
   @WebSocket
