@@ -75,15 +75,26 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
 
   private static class CancelHandlerWrapper implements CancelHandler {
     private CancelHandler handler;
+    private boolean cancelPending;
 
     public void setHandler(CancelHandler handler) {
-      this.handler = handler;
+      if (handler == null)
+        throw new IllegalArgumentException("handler must not be null");
+      synchronized (this) {
+        this.handler = handler;
+        if (cancelPending)
+          this.handler.onCancel();
+      }
     }
 
     @Override
     public void onCancel() {
-      assert (handler != null) : "No Handler set";
-      handler.onCancel();
+      synchronized (this) {
+        if (handler != null)
+          handler.onCancel();
+        else
+          cancelPending = true;
+      }
     }
   }
 
@@ -110,6 +121,9 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
   @SuppressWarnings("rawtypes")
   private void start(final String uuid, final String service, final String data, HttpServletRequest request,
       final RequestMethodAnswerer answerer) {
+    CancelHandlerWrapper myCancelHandler = new CancelHandlerWrapper();
+    handlers.put(uuid, myCancelHandler);
+
     RemoteServiceServlet servlet = helper.getServlet(service);
 
     // Hack for Jetty Bug
@@ -207,14 +221,13 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
           }
         }
       };
-      CancelHandlerWrapper myCancelHandler = new CancelHandlerWrapper();
-      handlers.put(uuid, myCancelHandler);
-      CancelHandler handler = (CancelHandler) toCall.invoke(servlet, params);
 
+      CancelHandler handler = (CancelHandler) toCall.invoke(servlet, params);
       if (handler == null)
         throw new IllegalArgumentException("Illegal implementation: " + toNeededMethodString(rpcRequest.getMethod())
             + " returned null");
       myCancelHandler.setHandler(handler);
+
 
     } catch (Throwable e) {
       logger.error("Cant Process Request because of thrown Exception at " + service + " with data " + data + ":", e);
