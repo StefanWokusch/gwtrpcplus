@@ -14,6 +14,11 @@ import com.googlecode.gwtrpcplus.client.util.Client;
 
 public class ConnectionHttp extends AbstractConnection {
 
+  @Override
+  public String toString() {
+    return getClass().getName() + (isPolling() ? " Polling" : "");
+  }
+
   /**
    * Thue when the BasicConnectino should be used
    */

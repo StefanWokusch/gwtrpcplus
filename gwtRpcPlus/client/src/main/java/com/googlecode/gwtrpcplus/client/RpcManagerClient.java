@@ -126,12 +126,13 @@ public class RpcManagerClient {
         public void onConnected() {
           assert (wrapper.state == ConnectionState.TRYCONNECT) : "You cant call onconnected when you are "
               + wrapper.state;
-          ConnectionWrapper lastActive = getActiveConnection();
+//          ConnectionWrapper lastActive = getActiveConnection();
 
           wrapper.state = ConnectionState.CONNECTED;
           RpcManagerClient.this.onConnected(c);
 
-          if (lastActive != getActiveConnection())
+          // Removed because we need to call this for http-polling state
+//          if (lastActive != getActiveConnection())
             for (RpcManagerHandler h : handlers)
               h.onActiveConnectionChanged(getActiveConnection().connection);
         }
