@@ -11,6 +11,10 @@
 	<set-configuration-property name="gwtrpcplus_websockets_enabled"
 		value="false" />
 
+	<define-configuration-property name="gwtrpcplus_bundleHttpRequests"
+		is_multi_valued="false" />
+	<set-configuration-property name="gwtrpcplus_bundleHttpRequests"
+		value="false" />
 
 	<define-property name="gwtrpcplus_UseRemoteService"
 		values="TRUE,FALSE" />
