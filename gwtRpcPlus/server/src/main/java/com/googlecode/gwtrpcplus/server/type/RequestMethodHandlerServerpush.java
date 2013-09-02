@@ -137,7 +137,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
       } catch (NullPointerException e) {
         // This is only to avoid long exceptionstacks in logging
         // TODO fix this nullpointerbug instead
-        logger.warn("Cant Process Request, because of not loaded Policies. This could caused by a Serverrestart.");
+        logger.warn("Cant Process Request, because of not loaded Policies. This could caused by a Serverrestart.", e);
         return;
       }
 
