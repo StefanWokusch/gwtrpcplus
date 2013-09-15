@@ -1,14 +1,15 @@
 package com.googlecode.gwtrpcplus.client.connection;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.googlecode.gwtrpcplus.client.RpcManagerClient;
 
 public class ConnectionHttpBundle extends ConnectionHttp {
 
-	// public ConnectionHttpBundle() {
-	// super(GWT.getHostPageBaseURL() + GWT.getModuleName() + "/gwtRpcPlusBundle");
-	// }
+	public ConnectionHttpBundle() {
+		super(GWT.getHostPageBaseURL() + GWT.getModuleName() + "/gwtRpcPlusBundle");
+	}
 
 	private StringBuilder requestQueue = null;
 
@@ -26,11 +27,9 @@ public class ConnectionHttpBundle extends ConnectionHttp {
 					requestQueue = null;
 				}
 			});
-		} else {
-			requestQueue.append('\n');
 		}
 
-		requestQueue.append(request);
+		requestQueue.append(request.length() + "\n" + request);
 	}
 
 }

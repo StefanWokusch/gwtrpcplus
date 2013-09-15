@@ -1,5 +1,6 @@
 package com.googlecode.gwtrpcplus.server.servlet;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +33,7 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
 			request(req, resp);
 	}
 
-	private void longpush(HttpServletRequest request, HttpServletResponse resp) {
+	protected void longpush(HttpServletRequest request, HttpServletResponse resp) {
 		String clientId = request.getHeader("clientId");
 		if (clientId == null) {
 			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -68,33 +69,31 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
 		}
 	}
 
-	private void request(HttpServletRequest request, HttpServletResponse resp) throws IOException {
-		StringBuilder finalResponse = new StringBuilder();
-		for (String data = request.getReader().readLine(); data != null; data = request.getReader().readLine()) {
-			String clientId = request.getHeader("clientId");
-			if (clientId == null) {
-				resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				return;
-			}
-
-			// String contextPath = req.getContextPath();
-			// String strongname = request.getHeader(RpcRequestBuilder.STRONG_NAME_HEADER);
-			// String modulebase = request.getHeader(RpcRequestBuilder.MODULE_BASE_HEADER);
-			// manager.onCall(clientId, data, request.getContextPath(), strongname, modulebase);
-
-			manager.onCall(clientId, data, request);
-
-			// TODO Make async
-			String response = manager.getResponse(clientId);
-			if (response != null) {
-				if (finalResponse.length() > 0)
-					finalResponse.append('\n');
-				finalResponse.append(response);
-			}
+	protected void request(HttpServletRequest request, HttpServletResponse resp) throws IOException {
+		StringBuilder data = new StringBuilder();
+		{
+			BufferedReader in = request.getReader();
+			char[] tmp = new char[100];
+			int len = 0;
+			do {
+				len = in.read(tmp, 0, tmp.length);
+				if (len > 0)
+					data.append(tmp, 0, len);
+			} while (len > 0);
 		}
-		// Answer
-		String response = finalResponse.toString();
-		if (!response.isEmpty()) {
+		
+		String clientId = request.getHeader("clientId");
+		if (clientId == null) {
+			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			return;
+		}
+
+		manager.onCall(clientId, data.toString(), request);
+
+		// TODO Make async
+		String response = manager.getResponse(clientId);
+
+		if (response != null) {
 			boolean gzipEncode = RPCServletUtils.acceptsGzipEncoding(request)
 					&& RPCServletUtils.exceedsUncompressedContentLengthLimit(response);
 
