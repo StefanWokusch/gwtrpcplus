@@ -11,25 +11,37 @@ public class ConnectionHttpBundle extends ConnectionHttp {
 		super(GWT.getHostPageBaseURL() + GWT.getModuleName() + "/gwtRpcPlusBundle");
 	}
 
-	private StringBuilder requestQueue = null;
+	private int requestAmount = 0;
+	private StringBuilder requestBundle = null;
 
 	@Override
 	public void send(String request) {
 		RpcManagerClient.log("request scheduled " + request);
 
-		if (requestQueue == null) {
-			requestQueue = new StringBuilder();
+		if (requestBundle == null) {
+			requestBundle = new StringBuilder();
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
 				public void execute() {
-					RpcManagerClient.log("sending scheduled requests " + requestQueue.length() + " bytes");
-					doSend(requestQueue.toString());
-					requestQueue = null;
+					send();
 				}
 			});
 		}
+		requestBundle.append(request.length() + "\n" + request);
+		requestAmount++;
 
-		requestQueue.append(request.length() + "\n" + request);
+		if (requestAmount >= 20) {
+			send();
+		}
+	}
+
+	private void send() {
+		if (requestAmount > 0) {
+			RpcManagerClient.log("sending scheduled requests " + requestBundle.length() + " bytes");
+			doSend(requestBundle.toString());
+			requestBundle = null;
+			requestAmount = 0;
+		}
 	}
 
 }

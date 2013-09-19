@@ -46,10 +46,10 @@ public class GwtRpcPlusBundleServlet extends GwtRpcPlusBasicServlet {
 			int read = 0;
 			for (int length = Integer.parseInt(l); length > 0;) {
 				read = in.read(tmp, 0, Math.min(length, tmp.length));
-				if (read > 0)
+				if (read > 0) {
 					data.append(tmp, 0, read);
-				length -= read;
-
+					length -= read;
+				}
 				if (length > 0 && read == -1) {
 					throw new RuntimeException("Unexpected End of Stream");
 				}
