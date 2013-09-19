@@ -43,9 +43,16 @@ public class GwtRpcPlusBundleServlet extends GwtRpcPlusBasicServlet {
 				return;
 			}
 			StringBuilder data = new StringBuilder();
-			for (int length = Integer.parseInt(l); length > 0; length -= tmp.length) {
-				int read = in.read(tmp, 0, Math.min(length, tmp.length));
-				data.append(tmp, 0, read);
+			int read = 0;
+			for (int length = Integer.parseInt(l); length > 0;) {
+				read = in.read(tmp, 0, Math.min(length, tmp.length));
+				if (read > 0)
+					data.append(tmp, 0, read);
+				length -= read;
+
+				if (length > 0 && read == -1) {
+					throw new RuntimeException("Unexpected End of Stream");
+				}
 			}
 
 			String clientId = request.getHeader("clientId");

@@ -79,7 +79,7 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
 				len = in.read(tmp, 0, tmp.length);
 				if (len > 0)
 					data.append(tmp, 0, len);
-			} while (len > 0);
+			} while (len >= 0);
 		}
 		
 		String clientId = request.getHeader("clientId");
