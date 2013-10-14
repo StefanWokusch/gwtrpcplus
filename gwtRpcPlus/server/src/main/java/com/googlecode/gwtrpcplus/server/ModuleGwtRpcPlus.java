@@ -7,7 +7,9 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServlet;
 
+import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
 import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusBasicServlet;
 import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusBundleServlet;
@@ -47,7 +49,10 @@ public class ModuleGwtRpcPlus extends ServletModule {
 	}
 
 	@Override
-	protected void configureServlets() {
+	protected final void configureServlets() {
+		// Place for the user to add custom Code, when inherit from this Module
+		configureCustomServlets();
+
 		// WebsocketConnection
 		boolean websocketsAdded = addWebsockets();
 
@@ -68,6 +73,9 @@ public class ModuleGwtRpcPlus extends ServletModule {
 				return servletClasses;
 			}
 		});
+	}
+
+	protected void configureCustomServlets() {
 	}
 
 	private boolean addWebsockets() {
@@ -93,5 +101,26 @@ public class ModuleGwtRpcPlus extends ServletModule {
 			logger.warn("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception:" + e.getClass().getName() + " :: " + e.getMessage());
 			return false;
 		}
+	}
+
+	/**
+	 * Optional usage for adding the Service to gwtrpcplus and to the servlet.
+	 * 
+	 * It binds the Service as Singleton too.
+	 * 
+	 * @param clazz
+	 *          ServiceImpl to add
+	 */
+	protected void bindGwtServlet(Class<? extends RemoteServiceServlet> clazz) {
+		servletClasses.add(clazz);
+		bind(clazz).in(Singleton.class);
+		serve("/" + modulename + "/" + findName(clazz)).with(clazz);
+	}
+
+	private String findName(Class<?> clazz) {
+		for (Class<?> c : clazz.getInterfaces())
+			if (c.isAnnotationPresent(RemoteServiceRelativePath.class))
+				return c.getAnnotation(RemoteServiceRelativePath.class).value();
+		return findName(clazz.getSuperclass());
 	}
 }
