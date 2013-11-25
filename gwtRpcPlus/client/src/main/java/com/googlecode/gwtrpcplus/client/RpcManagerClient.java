@@ -185,13 +185,14 @@ public class RpcManagerClient {
 		}
 	}
 
-	private int currentId = 1;
+	private int currentId = 0;
 	private final HashMap<String, RequestPlus> requests = new HashMap<String, RequestPlus>();
 
-	private ConnectionHandler handler = new ConnectionHandler() {
+	private final ConnectionHandler handler = new ConnectionHandler() {
 		@Override
 		public void addRequest(RequestPlus request) {
-			String id = "" + (currentId++);
+			String id = "" + (++currentId);
+			request.setId(id);
 			requests.put(id, request);
 			send(id, request);
 			checkPending();
@@ -199,13 +200,20 @@ public class RpcManagerClient {
 
 		@Override
 		public void removeRequest(RequestPlus request) {
-			for (Entry<String, RequestPlus> e : requests.entrySet())
-				if (e.getValue() == request) {
-					requests.remove(e.getKey());
-					checkPending();
-					return;
-				}
-			log("Warn: Remove a request, that not exist ignored");
+			String id = request.getId();
+			assert (id != null) : "No ID saved";
+			RequestPlus r = requests.remove(id);
+			if (r == null) {
+				log("Warn: Remove a request, that not exist ignored");
+				return;
+			}
+			assert (request == r);
+			checkPending();
+//			for (Entry<String, RequestPlus> e : requests.entrySet())
+//				if (e.getValue() == request) {
+//					requests.remove(e.getKey());
+//					return;
+//				}
 		}
 	};
 

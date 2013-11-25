@@ -8,66 +8,84 @@ import com.google.gwt.http.client.RequestCallback;
  */
 public interface RequestMethod {
 
-  public static interface RequestPlus {
-    /**
-     * @return the rpc-call infos for the Server
-     */
-    String getRequestString();
+	public static interface RequestPlus {
+		/**
+		 * @return the rpc-call infos for the Server
+		 */
+		String getRequestString();
 
-    /**
-     * @return the full qualified name of the ServiceInterface (delivered by the Async_Proxy)
-     */
-    String getServiceName();
+		/**
+		 * @return the full qualified name of the ServiceInterface (delivered by the Async_Proxy)
+		 */
+		String getServiceName();
 
-    /**
-     * Called when a response arrived for a Request
-     * 
-     * @param answer answer from the server
-     */
-    void onAnswer(String answer);
+		/**
+		 * Called when a response arrived for a Request
+		 * 
+		 * @param answer
+		 *          answer from the server
+		 */
+		void onAnswer(String answer);
 
-    /**
-     * Called when no Answer arrived from the server.
-     * 
-     * @return true when the Request should be resend
-     */
-    boolean onTimeout();
+		/**
+		 * Called when no Answer arrived from the server.
+		 * 
+		 * @return true when the Request should be resend
+		 */
+		boolean onTimeout();
 
-    /**
-     * @return a unique name for the RequestMethod, matching to some RequestMethodHandler on the Serverside
-     */
-    String getRequestTypeName();
-  }
+		/**
+		 * @return a unique name for the RequestMethod, matching to some RequestMethodHandler on the Serverside
+		 */
+		String getRequestTypeName();
 
-  public static interface ConnectionHandler {
-    /**
-     * Adds a Request and send it to the Server
-     * 
-     * @param request Request to send
-     */
-    void addRequest(RequestPlus request);
+		/**
+		 * Sets the ID of the Request. You need to save this and return it on getId()
+		 * 
+		 * @param id
+		 *          id of the Request (no need to use it in your code, needed for performance reasons only)
+		 */
+		void setId(String id);
 
-    /**
-     * Removes a Request from the list.
-     * 
-     * You need to call this when you don't expect any more answer.
-     * 
-     * For FireAndForget just call addRequest(r);removeRequest(r);
-     * 
-     * @param request request to remove
-     */
-    void removeRequest(RequestPlus request);
-  }
+		/**
+		 * @see setId
+		 * @return id from setId
+		 */
+		String getId();
+	}
 
-  void setHandler(ConnectionHandler handler);
+	public static interface ConnectionHandler {
+		/**
+		 * Adds a Request and send it to the Server
+		 * 
+		 * @param request
+		 *          Request to send
+		 */
+		void addRequest(RequestPlus request);
 
+		/**
+		 * Removes a Request from the list.
+		 * 
+		 * You need to call this when you don't expect any more answer.
+		 * 
+		 * For FireAndForget just call addRequest(r);removeRequest(r);
+		 * 
+		 * @param request
+		 *          request to remove
+		 */
+		void removeRequest(RequestPlus request);
+	}
 
-  /**
-   * Called when the Async Method is invoked
-   * 
-   * @param requestData Data to send
-   * @param requestCallback callback to call (use RequestHelper for easy usage)
-   * @return Request to cancle the request (if supported)
-   */
-  Request call(String requestData, RequestCallback requestCallback);
+	void setHandler(ConnectionHandler handler);
+
+	/**
+	 * Called when the Async Method is invoked
+	 * 
+	 * @param requestData
+	 *          Data to send
+	 * @param requestCallback
+	 *          callback to call (use RequestHelper for easy usage)
+	 * @return Request to cancle the request (if supported)
+	 */
+	Request call(String requestData, RequestCallback requestCallback);
 }

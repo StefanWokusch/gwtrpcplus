@@ -37,7 +37,7 @@ public class RequestMethodQueued extends AbstractRequestMethod {
     scheduler.scheduleFinaly(cmd);
   }
 
-  private final class QueueRequest implements RequestPlus, Comparable<QueueRequest> {
+	private final class QueueRequest extends AbstractRequestPlus implements Comparable<QueueRequest> {
     private final String requestData;
     private final RequestCallback callback;
 

@@ -16,206 +16,197 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.google.gwt.http.client.RequestCallback;
-import com.googlecode.gwtrpcplus.client.Connection;
-import com.googlecode.gwtrpcplus.client.ConnectionProvider;
-import com.googlecode.gwtrpcplus.client.RequestMethod;
-import com.googlecode.gwtrpcplus.client.RpcManagerClient;
 import com.googlecode.gwtrpcplus.client.Connection.RecieveHandler;
 import com.googlecode.gwtrpcplus.client.RequestMethod.ConnectionHandler;
-import com.googlecode.gwtrpcplus.client.RequestMethod.RequestPlus;
+import com.googlecode.gwtrpcplus.client.type.AbstractRequestPlus;
 import com.googlecode.gwtrpcplus.client.util.MyTimer;
 import com.googlecode.gwtrpcplus.client.util.MyWindow;
 
-
 public class RpcManagerClientTest {
 
+	@Mock
+	Connection connection;
+	RecieveHandler connectionHandler;
 
-  @Mock
-  Connection connection;
-  RecieveHandler connectionHandler;
+	RpcManagerClient rpc;
 
-  RpcManagerClient rpc;
+	@Mock
+	RpcManagerClient.RpcManagerHandler rpcHandler;
 
-  @Mock
-  RpcManagerClient.RpcManagerHandler rpcHandler;
+	@Mock
+	RequestMethod method;
+	ConnectionHandler methodHandler;
 
-  @Mock
-  RequestMethod method;
-  ConnectionHandler methodHandler;
+	@Mock
+	RequestCallback gwtRpcCallback;
+	@Mock
+	MyTimer timer;
+	@Mock
+	MyWindow window;
 
-  @Mock
-  RequestCallback gwtRpcCallback;
-  @Mock
-  MyTimer timer;
-  @Mock
-  MyWindow window;
+	String lastAnswer = null;
 
-  String lastAnswer = null;
+	private class TestRequest extends AbstractRequestPlus {
+		private final boolean resend;
 
-  private class TestRequest implements RequestPlus {
-    private final boolean resend;
+		public TestRequest(boolean resend) {
+			this.resend = resend;
+		}
 
-    public TestRequest(boolean resend) {
-      this.resend = resend;
-    }
+		@Override
+		public String getRequestTypeName() {
+			return "t";
+		}
 
-    @Override
-    public String getRequestTypeName() {
-      return "t";
-    }
+		@Override
+		public String getServiceName() {
+			return "test";
+		}
 
-    @Override
-    public String getServiceName() {
-      return "test";
-    }
+		@Override
+		public String getRequestString() {
+			return "data";
+		}
 
-    @Override
-    public String getRequestString() {
-      return "data";
-    }
+		@Override
+		public void onAnswer(String answer) {
+			lastAnswer = answer;
+		}
 
-    @Override
-    public void onAnswer(String answer) {
-      lastAnswer = answer;
-    }
+		@Override
+		public boolean onTimeout() {
+			return resend;
+		}
+	}
 
-    @Override
-    public boolean onTimeout() {
-      return resend;
-    }
-  }
+	// Initialization
+	@Before
+	public void init() {
+		MockitoAnnotations.initMocks(this);
 
-  // Initialization
-  @Before
-  public void init() {
-    MockitoAnnotations.initMocks(this);
+		connectionHandler = null;
+		lastAnswer = null;
 
-    connectionHandler = null;
-    lastAnswer = null;
+		doAnswer(new Answer<Void>() {
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				methodHandler = (ConnectionHandler) invocation.getArguments()[0];
+				return null;
+			}
+		}).when(method).setHandler(any(ConnectionHandler.class));
 
-    doAnswer(new Answer<Void>() {
-      @Override
-      public Void answer(InvocationOnMock invocation) throws Throwable {
-        methodHandler = (ConnectionHandler) invocation.getArguments()[0];
-        return null;
-      }
-    }).when(method).setHandler(any(ConnectionHandler.class));
+		doAnswer(new Answer<Void>() {
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				connectionHandler = (RecieveHandler) invocation.getArguments()[0];
+				return null;
+			}
+		}).when(connection).setHandler(any(RecieveHandler.class));
 
-    doAnswer(new Answer<Void>() {
-      @Override
-      public Void answer(InvocationOnMock invocation) throws Throwable {
-        connectionHandler = (RecieveHandler) invocation.getArguments()[0];
-        return null;
-      }
-    }).when(connection).setHandler(any(RecieveHandler.class));
+		rpc = new RpcManagerClient(new ConnectionProvider() {
+			@Override
+			public List<Connection> get() {
+				return new ArrayList<Connection>(Arrays.asList(new Connection[] { connection }));
+			}
+		}, window);
+		rpc.timer = timer;
+		rpc.register(method);
+		rpc.addHandler(rpcHandler);
 
-    rpc = new RpcManagerClient(new ConnectionProvider() {
-      @Override
-      public List<Connection> get() {
-        return new ArrayList<Connection>(Arrays.asList(new Connection[]{
-          connection
-        }));
-      }
-    }, window);
-    rpc.timer = timer;
-    rpc.register(method);
-    rpc.addHandler(rpcHandler);
+		assertNotNull(connectionHandler);
+		connectionHandler.onConnected();
+	}
 
-    assertNotNull(connectionHandler);
-    connectionHandler.onConnected();
-  }
+	@Test
+	public void simpleAnswer() {
+		TestRequest request = new TestRequest(true);
+		methodHandler.addRequest(request);
 
-  @Test
-  public void simpleAnswer() {
-    TestRequest request = new TestRequest(true);
-    methodHandler.addRequest(request);
+		connectionHandler.onRecieve("1#answer");
 
-    connectionHandler.onRecieve("1#answer");
+		assertEquals("answer", lastAnswer);
+	}
 
-    assertEquals("answer", lastAnswer);
-  }
+	@Test
+	public void removeRequest() {
+		TestRequest request = new TestRequest(true);
+		methodHandler.addRequest(request);
 
+		connectionHandler.onRecieve("1#answer");
+		methodHandler.removeRequest(request);
+		rpc.onTimeout();
 
-  @Test
-  public void removeRequest() {
-    TestRequest request = new TestRequest(true);
-    methodHandler.addRequest(request);
+		verify(connection, times(1)).send(anyString());
+	}
 
-    connectionHandler.onRecieve("1#answer");
-    methodHandler.removeRequest(request);
-    rpc.onTimeout();
+	@Test
+	public void setPending_true() {
+		TestRequest request = new TestRequest(true);
+		methodHandler.addRequest(request);
 
-    verify(connection, times(1)).send(anyString());
-  }
+		verify(connection).setPending(true);
+	}
 
-  @Test
-  public void setPending_true() {
-    TestRequest request = new TestRequest(true);
-    methodHandler.addRequest(request);
+	@Test
+	public void setPending_false() {
+		TestRequest request = new TestRequest(true);
+		methodHandler.addRequest(request);
+		verify(connection).setPending(true);
 
-    verify(connection).setPending(true);
-  }
+		methodHandler.removeRequest(request);
 
-  @Test
-  public void setPending_false() {
-    TestRequest request = new TestRequest(true);
-    methodHandler.addRequest(request);
-    verify(connection).setPending(true);
+		verify(connection).setPending(false);
+	}
 
-    methodHandler.removeRequest(request);
+	@Test
+	public void noResponse_resendAllowed_resend() {
+		TestRequest request = new TestRequest(true);
+		methodHandler.addRequest(request);
 
-    verify(connection).setPending(false);
-  }
+		rpc.onTimeout();
 
-  @Test
-  public void noResponse_resendAllowed_resend() {
-    TestRequest request = new TestRequest(true);
-    methodHandler.addRequest(request);
+		verify(connection, times(2)).send(anyString());
+	}
 
-    rpc.onTimeout();
+	@Test
+	public void noResponse_resendNotAllowed_noRresend() {
+		TestRequest request = new TestRequest(false);
+		methodHandler.addRequest(request);
 
-    verify(connection, times(2)).send(anyString());
-  }
+		rpc.onTimeout();
 
-  @Test
-  public void noResponse_resendNotAllowed_noRresend() {
-    TestRequest request = new TestRequest(false);
-    methodHandler.addRequest(request);
+		verify(connection, times(1)).send(anyString());
+	}
 
-    rpc.onTimeout();
+	@Test
+	public void responseHandler_fire() {
+		TestRequest request = new TestRequest(true);
+		methodHandler.addRequest(request);
 
-    verify(connection, times(1)).send(anyString());
-  }
+		connectionHandler.onRecieve("1#answer");
 
-  @Test
-  public void responseHandler_fire() {
-    TestRequest request = new TestRequest(true);
-    methodHandler.addRequest(request);
+		verify(rpcHandler, times(1)).onResponse();
+	}
 
-    connectionHandler.onRecieve("1#answer");
+	@Test
+	public void timeoutHandler_withPending_fire() {
+		TestRequest request = new TestRequest(true);
+		methodHandler.addRequest(request);
 
-    verify(rpcHandler, times(1)).onResponse();
-  }
+		rpc.onTimeout();
 
-  @Test
-  public void timeoutHandler_withPending_fire() {
-    TestRequest request = new TestRequest(true);
-    methodHandler.addRequest(request);
+		verify(rpcHandler, times(1)).onTimeout();
+	}
 
-    rpc.onTimeout();
+	@Test
+	public void timeoutHandler_withoutPending_dontfire() {
+		TestRequest request = new TestRequest(true);
+		methodHandler.addRequest(request);
+		methodHandler.removeRequest(request);
 
-    verify(rpcHandler, times(1)).onTimeout();
-  }
+		rpc.onTimeout();
 
-  @Test
-  public void timeoutHandler_withoutPending_dontfire() {
-    TestRequest request = new TestRequest(true);
-    methodHandler.addRequest(request);
-    methodHandler.removeRequest(request);
-
-    rpc.onTimeout();
-
-    verify(rpcHandler, times(0)).onTimeout();
-  }
+		verify(rpcHandler, times(0)).onTimeout();
+	}
 
 }
