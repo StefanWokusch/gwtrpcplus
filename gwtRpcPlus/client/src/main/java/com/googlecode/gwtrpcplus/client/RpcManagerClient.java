@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
@@ -158,7 +159,15 @@ public class RpcManagerClient {
 
 		RequestPlus request = requests.get(id);
 		if (request != null) {
-			request.onAnswer(data);
+			try {
+				request.onAnswer(data);
+			} catch (Throwable e) {
+				UncaughtExceptionHandler uncaughtExceptionHandler = GWT.getUncaughtExceptionHandler();
+				if (uncaughtExceptionHandler == null)
+					GWT.log("Exception while processing Answer with no UncaughtExceptionHandler", e);
+				else
+					uncaughtExceptionHandler.onUncaughtException(e);
+			}
 		} else {
 			log("Ignoring Answer " + id + ": " + data);
 		}
@@ -209,11 +218,11 @@ public class RpcManagerClient {
 			}
 			assert (request == r);
 			checkPending();
-//			for (Entry<String, RequestPlus> e : requests.entrySet())
-//				if (e.getValue() == request) {
-//					requests.remove(e.getKey());
-//					return;
-//				}
+			// for (Entry<String, RequestPlus> e : requests.entrySet())
+			// if (e.getValue() == request) {
+			// requests.remove(e.getKey());
+			// return;
+			// }
 		}
 	};
 
