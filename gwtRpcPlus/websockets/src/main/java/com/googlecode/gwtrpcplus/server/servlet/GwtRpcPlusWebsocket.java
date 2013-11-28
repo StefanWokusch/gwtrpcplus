@@ -100,6 +100,7 @@ public class GwtRpcPlusWebsocket extends Endpoint {
 						try {
 							logger.trace("send: {}", answer);
 							session.getBasicRemote().sendText(answer);
+							return true;
 						} catch (Throwable e) {
 							// TODO: handle exception
 							logger.error("Exception while Sending Message. This could caused by disconnecting.", e);

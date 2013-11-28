@@ -127,6 +127,7 @@ public class GwtRpcPlusJettyWebsocket extends WebSocketServlet {
 						try {
 							logger.trace("send: {}", answer);
 							session.getRemote().sendString(answer);
+							return true;
 						} catch (Throwable e) {
 							// TODO: handle exception
 							logger.error("Exception while Sending Message. This could caused by disconnecting.", e);
