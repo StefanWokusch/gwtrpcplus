@@ -110,7 +110,7 @@ public class ModuleGwtRpcPlus extends ServletModule {
 			m.setModulename(modulename);
 			install(m);
 			return m.isAdded();
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+		} catch (Exception e) {
 			logger.info("WebsocketModule not added", e);
 			return false;
 		}
