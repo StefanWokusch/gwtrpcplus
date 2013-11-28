@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
 import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusBasicServlet;
 import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusBundleServlet;
+import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusWebsocketDummy;
 import com.googlecode.gwtrpcplus.server.util.Logger;
 
 public class ModuleGwtRpcPlus extends ServletModule {
@@ -44,14 +45,26 @@ public class ModuleGwtRpcPlus extends ServletModule {
 		this.servletClasses = servletClasses;
 	}
 
+	private final String[] websocketModules = new String[] {
+			"com.googlecode.gwtrpcplus.server.ModuleGwtRpcPlusWebsocket",
+			"com.googlecode.gwtrpcplus.server.jetty.ModuleGwtRpcPlusWebsocket" };
+
 	@Override
 	protected final void configureServlets() {
 		// Place for the user to add custom Code, when inherit from this Module
 		configureCustomServlets();
 
 		// Try adding Websocket-module
-		tryAddInternalModule("com.googlecode.gwtrpcplus.server.ModuleGwtRpcPlusWebsocket");
-		tryAddInternalModule("com.googlecode.gwtrpcplus.server.jetty.ModuleGwtRpcPlusWebsocket");
+		boolean websocketSupport = false;
+		for (String className : websocketModules) {
+			websocketSupport = addWebsocketModule(className);
+			if (websocketSupport)
+				break;
+		}
+		if (!websocketSupport) {
+			logger.warn("No WebsocketSupport added for GwtRpcPlus");
+			serve(getWebsocketPath(modulename)).with(GwtRpcPlusWebsocketDummy.class);
+		}
 
 		// ConnectionBasic
 		serve("/" + modulename + "/gwtRpcPlusBasic").with(GwtRpcPlusBasicServlet.class);
@@ -67,31 +80,39 @@ public class ModuleGwtRpcPlus extends ServletModule {
 		});
 	}
 
-	public static class InternalGwtRpcPlusModule extends ServletModule {
+	private static String getWebsocketPath(String modulename) {
+		return "/" + modulename + "/gwtRpcPlusWebsocket";
+	}
+
+	public abstract static class WebsocketModule extends ServletModule {
 		private String modulename;
 
-		public String getModulename() {
-			return modulename;
-		}
+		public abstract boolean isAdded();
 
 		public void setModulename(String modulename) {
 			this.modulename = modulename;
+		}
+
+		protected String getWebsocketPath() {
+			return ModuleGwtRpcPlus.getWebsocketPath(modulename);
 		}
 	}
 
 	/**
 	 * Adds an Module by its name. This is used to add Modules automaticly via classpath
 	 * 
-	 * @param internalModule
+	 * @param className
 	 *          full qualified classname of the InternalGwtRpcPlusModule
 	 */
-	private void tryAddInternalModule(String internalModule) {
+	private boolean addWebsocketModule(String className) {
 		try {
-			InternalGwtRpcPlusModule m = (InternalGwtRpcPlusModule) Class.forName(internalModule).newInstance();
+			WebsocketModule m = (WebsocketModule) Class.forName(className).newInstance();
 			m.setModulename(modulename);
 			install(m);
+			return m.isAdded();
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			logger.info("WebsocketModule not added", e);
+			return false;
 		}
 	}
 

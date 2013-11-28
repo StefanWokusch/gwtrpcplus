@@ -94,7 +94,6 @@ public class GwtRpcPlusJettyWebsocket extends WebSocketServlet {
 
 		@OnWebSocketMessage
 		public void onMessage(final String data) {
-			// System.out.println("Recieving " + data);
 			logger.trace("Data recieved: {}", data);
 			if (!isInit) {
 				isInit = true;

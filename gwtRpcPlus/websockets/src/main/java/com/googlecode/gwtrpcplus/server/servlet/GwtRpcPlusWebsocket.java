@@ -35,7 +35,6 @@ public class GwtRpcPlusWebsocket extends Endpoint {
 		// Injector injector = (Injector) config.getUserProperties().get(Injector.class.getName());
 		// GwtRpcSocket socket = injector.getInstance(GwtRpcSocket.class);
 		HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
-		System.out.println("HTTPSESSION:::: " + httpSession.getId() + " ->" + httpSession.getAttribute("currentUser"));
 		GwtRpcSocket socket = provider.get();
 		socket.init(session, httpSession);
 		session.addMessageHandler(socket);
@@ -76,7 +75,6 @@ public class GwtRpcPlusWebsocket extends Endpoint {
 
 		@Override
 		public void onMessage(String data, boolean last) {
-			// System.out.println("Recieving " + data);
 			logger.trace("Data recieved: {}", data);
 			if (!isInit) {
 				isInit = true;
