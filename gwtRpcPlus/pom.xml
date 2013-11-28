@@ -59,6 +59,14 @@
 		</developer>
 	</developers>
 	
+	<modules>
+		<module>model</module>
+		<module>server</module>
+		<module>client</module>
+		<module>websockets</module>
+		<module>websocketsjetty</module>
+	</modules>
+	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -247,11 +255,4 @@
 			</build>
 		</profile>
 	</profiles>
-
-	<modules>
-		<module>model</module>
-		<module>server</module>
-		<module>client</module>
-		<module>websocketsjetty</module>
-	</modules>
 </project>

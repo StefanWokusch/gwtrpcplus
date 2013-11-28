@@ -126,7 +126,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
 
     RemoteServiceServlet servlet = helper.getServlet(service);
 
-    // Hack for Jetty Bug
+    // Hack for Webserver Bugs
     final ClassLoader oldclassloader = Thread.currentThread().getContextClassLoader();
     helper.setThreadLocals(servlet, request);
     Thread.currentThread().setContextClassLoader(servlet.getClass().getClassLoader());

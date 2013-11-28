@@ -1,11 +1,7 @@
 package com.googlecode.gwtrpcplus.server;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-
-import javax.servlet.http.HttpServlet;
 
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -13,7 +9,6 @@ import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
 import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusBasicServlet;
 import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusBundleServlet;
-import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusWebsocketDummy;
 import com.googlecode.gwtrpcplus.server.util.Logger;
 
 public class ModuleGwtRpcPlus extends ServletModule {
@@ -28,7 +23,8 @@ public class ModuleGwtRpcPlus extends ServletModule {
 	 * @param servletClasses
 	 *          Set of all ServletClasses
 	 */
-	public ModuleGwtRpcPlus(String modulename, @SuppressWarnings("unchecked") Class<? extends RemoteServiceServlet>... servletClasses) {
+	public ModuleGwtRpcPlus(String modulename,
+			@SuppressWarnings("unchecked") Class<? extends RemoteServiceServlet>... servletClasses) {
 		Set<Class<? extends RemoteServiceServlet>> classes = new HashSet<Class<? extends RemoteServiceServlet>>();
 		for (Class<? extends RemoteServiceServlet> c : servletClasses)
 			classes.add(c);
@@ -53,13 +49,9 @@ public class ModuleGwtRpcPlus extends ServletModule {
 		// Place for the user to add custom Code, when inherit from this Module
 		configureCustomServlets();
 
-		// WebsocketConnection
-		boolean websocketsAdded = addWebsockets();
-
-		// Serve with dummy, returning a NotImplemented-State
-		if (!websocketsAdded) {
-			serve("/" + modulename + "/gwtRpcPlusWebsocket").with(GwtRpcPlusWebsocketDummy.class);
-		}
+		// Try adding Websocket-module
+		tryAddInternalModule("com.googlecode.gwtrpcplus.server.ModuleGwtRpcPlusWebsocket");
+		tryAddInternalModule("com.googlecode.gwtrpcplus.server.jetty.ModuleGwtRpcPlusWebsocket");
 
 		// ConnectionBasic
 		serve("/" + modulename + "/gwtRpcPlusBasic").with(GwtRpcPlusBasicServlet.class);
@@ -75,32 +67,35 @@ public class ModuleGwtRpcPlus extends ServletModule {
 		});
 	}
 
-	protected void configureCustomServlets() {
+	public static class InternalGwtRpcPlusModule extends ServletModule {
+		private String modulename;
+
+		public String getModulename() {
+			return modulename;
+		}
+
+		public void setModulename(String modulename) {
+			this.modulename = modulename;
+		}
 	}
 
-	private boolean addWebsockets() {
+	/**
+	 * Adds an Module by its name. This is used to add Modules automaticly via classpath
+	 * 
+	 * @param internalModule
+	 *          full qualified classname of the InternalGwtRpcPlusModule
+	 */
+	private void tryAddInternalModule(String internalModule) {
 		try {
-			@SuppressWarnings("unchecked")
-			Class<? extends HttpServlet> c = (Class<? extends HttpServlet>) Class.forName("com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusWebsocket");
-
-			// Check for correct Jetty Version
-			if (!getServletContext().getServerInfo().startsWith("jetty/9.")) {
-				throw new RuntimeException("Only supported in jetty 9 yet (working since jetty 9.0.0), but was " + getServletContext().getServerInfo());
-			}
-
-			// Try adding the WebsocketServlet
-			Map<String, String> params = new HashMap<String, String>();
-			params.put("bufferSize", "100000");
-			serve("/" + modulename + "/gwtRpcPlusWebsocket").with(c, params);
-			return true;
-		} catch (ClassNotFoundException e) {
-			// Ignore when not added
-			return false;
-		} catch (Throwable e) {
-			logger.trace("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception", e);
-			logger.warn("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception:" + e.getClass().getName() + " :: " + e.getMessage());
-			return false;
+			InternalGwtRpcPlusModule m = (InternalGwtRpcPlusModule) Class.forName(internalModule).newInstance();
+			m.setModulename(modulename);
+			install(m);
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+			logger.info("WebsocketModule not added", e);
 		}
+	}
+
+	protected void configureCustomServlets() {
 	}
 
 	/**
