@@ -32,8 +32,11 @@ public class ModuleGwtRpcPlusWebsocket extends WebsocketModule {
 			logger.warn("No JSR-356 Websocket-Support found for " + getServletContext().getServerInfo());
 		else {
 			try {
+				serverContainer.setDefaultMaxTextMessageBufferSize(1000000);
+
 				MyConfigurator configurator = new MyConfigurator();
 				requestInjection(configurator);
+
 				ServerEndpointConfig cfg = ServerEndpointConfig.Builder.create(GwtRpcPlusWebsocket.class, getWebsocketPath())
 						.configurator(configurator).build();
 				serverContainer.addEndpoint(cfg);
@@ -55,7 +58,7 @@ public class ModuleGwtRpcPlusWebsocket extends WebsocketModule {
 			injector.injectMembers(instance);
 			return instance;
 		}
-
+		
 		@Override
 		public void modifyHandshake(ServerEndpointConfig config, HandshakeRequest request, HandshakeResponse response) {
 			HttpSession httpSession = (HttpSession) request.getHttpSession();

@@ -17,23 +17,16 @@ import com.googlecode.gwtrpcplus.server.impl.RpcManagerServer;
 import com.googlecode.gwtrpcplus.server.impl.RpcPlusClient.RpcPlusClientHandler;
 import com.googlecode.gwtrpcplus.server.util.Logger;
 
-//@Singleton
 public class GwtRpcPlusWebsocket extends Endpoint {
-	// private static final long serialVersionUID = 1L;
-
 	private final static Logger logger = new Logger(GwtRpcPlusWebsocket.class);
 
 	@Inject
 	private Provider<GwtRpcSocket> provider;
 
-	// private final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
-
 	private final HashMap<String, GwtRpcSocket> openSockets = new HashMap<>();
 
 	@Override
 	public void onOpen(Session session, EndpointConfig config) {
-		// Injector injector = (Injector) config.getUserProperties().get(Injector.class.getName());
-		// GwtRpcSocket socket = injector.getInstance(GwtRpcSocket.class);
 		HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
 		GwtRpcSocket socket = provider.get();
 		socket.init(session, httpSession);
@@ -69,6 +62,7 @@ public class GwtRpcPlusWebsocket extends Endpoint {
 		public void init(Session session, HttpSession httpSession) {
 			this.session = session;
 			this.httpSession = httpSession;
+			this.contextPath = httpSession.getServletContext().getContextPath();
 		}
 
 		private boolean isInit = false;

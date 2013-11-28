@@ -40,6 +40,7 @@ public class RequestMethodHandlerBasic implements RequestMethodHandler {
 				// This is only to avoid long exceptionstacks in logging
 				// TODO fix this nullpointerbug instead
 				logger.warn("Cant Process Request, because of not loaded Policies. This could caused by a Serverrestart.");
+				logger.trace("Cant Process Request, because of not loaded Policies. This could caused by a Serverrestart.", e);
 				return;
 			}
 			String answer = RPC.invokeAndEncodeResponse(servlet, rpcRequest.getMethod(), rpcRequest.getParameters(),

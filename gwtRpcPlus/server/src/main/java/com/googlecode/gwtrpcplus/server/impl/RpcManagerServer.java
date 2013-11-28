@@ -60,6 +60,9 @@ public class RpcManagerServer {
 
 	public void onCall(final String clientId, String data, String contextPath, String permStrongName,
 			String reqModuleBasePath, HttpSession httpSession) {
+		if (contextPath == null)
+			logger.warn("No ContextPath given");
+
 		onCall(clientId, data, new HttpServletRequestMinimum(contextPath, permStrongName, reqModuleBasePath, httpSession));
 	}
 
