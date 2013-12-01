@@ -1,7 +1,6 @@
 package com.googlecode.gwtrpcplus.server.servlet;
 
 import java.util.HashMap;
-import java.util.concurrent.ExecutorService;
 
 import javax.servlet.http.HttpSession;
 import javax.websocket.CloseReason;
@@ -13,6 +12,7 @@ import javax.websocket.Session;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.googlecode.gwtrpcplus.server.ModuleGwtRpcPlusWebsocket;
 import com.googlecode.gwtrpcplus.server.impl.RpcManagerServer;
 import com.googlecode.gwtrpcplus.server.impl.RpcPlusClient.RpcPlusClientHandler;
 import com.googlecode.gwtrpcplus.server.util.Logger;
@@ -28,8 +28,9 @@ public class GwtRpcPlusWebsocket extends Endpoint {
 	@Override
 	public void onOpen(Session session, EndpointConfig config) {
 		HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
+		String contextPath = (String) config.getUserProperties().get(ModuleGwtRpcPlusWebsocket.CONTEXT_PATH_NAME);
 		GwtRpcSocket socket = provider.get();
-		socket.init(session, httpSession);
+		socket.init(session, httpSession, contextPath);
 		session.addMessageHandler(socket);
 		openSockets.put(session.getId(), socket);
 	}
@@ -55,14 +56,14 @@ public class GwtRpcPlusWebsocket extends Endpoint {
 		private String contextPath;
 
 		@Inject
-		public GwtRpcSocket(/* @ShortRunningTasks */ExecutorService executor, RpcManagerServer manager) {
+		public GwtRpcSocket(RpcManagerServer manager) {
 			this.manager = manager;
 		}
 
-		public void init(Session session, HttpSession httpSession) {
+		public void init(Session session, HttpSession httpSession, String contextPath) {
 			this.session = session;
 			this.httpSession = httpSession;
-			this.contextPath = httpSession.getServletContext().getContextPath();
+			this.contextPath = contextPath;
 		}
 
 		private boolean isInit = false;
@@ -80,8 +81,7 @@ public class GwtRpcPlusWebsocket extends Endpoint {
 
 		public void onClose(CloseReason closeReason) {
 			// isConnected = false;
-			logger.info("Client disconnected {}: {} (code: {})", session, closeReason.getReasonPhrase(), closeReason
-					.getCloseCode().getCode());
+			logger.info("Client disconnected {}: {} (code: {})", session, closeReason.getReasonPhrase(), closeReason.getCloseCode().getCode());
 			if (handlerReg != null)
 				handlerReg.removeHandler();
 		}
@@ -90,8 +90,7 @@ public class GwtRpcPlusWebsocket extends Endpoint {
 			clientId = data.substring(0, data.indexOf("#"));
 			permutationStrongName = data.substring(0, data.indexOf("#"));
 			moduleBasePath = data.substring(data.indexOf("#") + 1);
-			logger.debug("Client initialized with PermutationStrongName: \"{} \" modulBasePath:\"{}\"",
-					permutationStrongName, moduleBasePath);
+			logger.debug("Client initialized with PermutationStrongName: \"{} \" modulBasePath:\"{}\"", permutationStrongName, moduleBasePath);
 			handlerReg = manager.addHandler(clientId, new RpcPlusClientHandler() {
 				@Override
 				public boolean onAnswer(String answer) {
@@ -99,7 +98,7 @@ public class GwtRpcPlusWebsocket extends Endpoint {
 					if (session.isOpen()) {
 						try {
 							logger.trace("send: {}", answer);
-							session.getBasicRemote().sendText(answer);
+							session.getAsyncRemote().sendText(answer);
 							return true;
 						} catch (Throwable e) {
 							// TODO: handle exception

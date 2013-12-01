@@ -1,7 +1,6 @@
 package com.googlecode.gwtrpcplus.server.jetty.servlet;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -73,7 +72,7 @@ public class GwtRpcPlusJettyWebsocket extends WebSocketServlet {
 		private String contextPath;
 
 		@Inject
-		public GwtRpcSocket(/* @ShortRunningTasks */ExecutorService executor, RpcManagerServer manager) {
+		public GwtRpcSocket(RpcManagerServer manager) {
 			this.manager = manager;
 		}
 
@@ -117,8 +116,7 @@ public class GwtRpcPlusJettyWebsocket extends WebSocketServlet {
 			clientId = data.substring(0, data.indexOf("#"));
 			permutationStrongName = data.substring(0, data.indexOf("#"));
 			moduleBasePath = data.substring(data.indexOf("#") + 1);
-			logger.debug("Client initialized with PermutationStrongName: \"{} \" modulBasePath:\"{}\"",
-					permutationStrongName, moduleBasePath);
+			logger.debug("Client initialized with PermutationStrongName: \"{} \" modulBasePath:\"{}\"", permutationStrongName, moduleBasePath);
 			handlerReg = manager.addHandler(clientId, new RpcPlusClientHandler() {
 				@Override
 				public boolean onAnswer(String answer) {

@@ -27,11 +27,11 @@ public class RequestMethodHandlerBasic implements RequestMethodHandler {
 	@Override
 	public void process(String service, String data, HttpServletRequest request, RequestMethodAnswerer answerer) {
 		// Hack for Webserver Bugs
-		final ClassLoader oldclassloader = Thread.currentThread().getContextClassLoader();
+		// final ClassLoader oldclassloader = Thread.currentThread().getContextClassLoader();
 
 		RemoteServiceServlet servlet = helper.getServlet(service);
 		helper.setThreadLocals(servlet, request);
-		Thread.currentThread().setContextClassLoader(servlet.getClass().getClassLoader());
+		// Thread.currentThread().setContextClassLoader(servlet.getClass().getClassLoader());
 		try {
 			final RPCRequest rpcRequest;
 			try {
@@ -42,9 +42,10 @@ public class RequestMethodHandlerBasic implements RequestMethodHandler {
 				logger.warn("Cant Process Request, because of not loaded Policies. This could caused by a Serverrestart.");
 				logger.trace("Cant Process Request, because of not loaded Policies. This could caused by a Serverrestart.", e);
 				return;
+			} catch (IllegalStateException e) {
+				throw new IllegalStateException("Exception while decoding Request of " + servlet.getClass(), e);
 			}
-			String answer = RPC.invokeAndEncodeResponse(servlet, rpcRequest.getMethod(), rpcRequest.getParameters(),
-					rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
+			String answer = RPC.invokeAndEncodeResponse(servlet, rpcRequest.getMethod(), rpcRequest.getParameters(), rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
 			answerer.send("+" + answer);
 		} catch (Throwable e) {
 			logger.error("Can't Process Request because of thrown Exception at " + service + " with data " + data, e);
@@ -52,7 +53,7 @@ public class RequestMethodHandlerBasic implements RequestMethodHandler {
 			return;
 		} finally {
 			helper.setThreadLocals(servlet, null);
-			Thread.currentThread().setContextClassLoader(oldclassloader);
+			// Thread.currentThread().setContextClassLoader(oldclassloader);
 		}
 	}
 

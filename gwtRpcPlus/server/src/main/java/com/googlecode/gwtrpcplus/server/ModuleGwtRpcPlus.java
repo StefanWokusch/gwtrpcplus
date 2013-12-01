@@ -24,8 +24,7 @@ public class ModuleGwtRpcPlus extends ServletModule {
 	 * @param servletClasses
 	 *          Set of all ServletClasses
 	 */
-	public ModuleGwtRpcPlus(String modulename,
-			@SuppressWarnings("unchecked") Class<? extends RemoteServiceServlet>... servletClasses) {
+	public ModuleGwtRpcPlus(String modulename, @SuppressWarnings("unchecked") Class<? extends RemoteServiceServlet>... servletClasses) {
 		Set<Class<? extends RemoteServiceServlet>> classes = new HashSet<Class<? extends RemoteServiceServlet>>();
 		for (Class<? extends RemoteServiceServlet> c : servletClasses)
 			classes.add(c);
@@ -45,9 +44,7 @@ public class ModuleGwtRpcPlus extends ServletModule {
 		this.servletClasses = servletClasses;
 	}
 
-	private final String[] websocketModules = new String[] {
-			"com.googlecode.gwtrpcplus.server.ModuleGwtRpcPlusWebsocket",
-			"com.googlecode.gwtrpcplus.server.jetty.ModuleGwtRpcPlusWebsocket" };
+	private final String[] websocketModules = new String[] { "com.googlecode.gwtrpcplus.server.ModuleGwtRpcPlusWebsocket", "com.googlecode.gwtrpcplus.server.jetty.ModuleGwtRpcPlusWebsocket" };
 
 	@Override
 	protected final void configureServlets() {
