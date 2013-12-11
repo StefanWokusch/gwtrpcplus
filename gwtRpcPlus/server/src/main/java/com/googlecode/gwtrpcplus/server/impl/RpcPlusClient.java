@@ -28,7 +28,7 @@ public class RpcPlusClient {
   /**
    * Handler for Answers
    */
-  public static interface RpcPlusClientHandler {
+  public interface RpcPlusClientHandler {
     /**
      * Called when a answer was created for a client
      * 

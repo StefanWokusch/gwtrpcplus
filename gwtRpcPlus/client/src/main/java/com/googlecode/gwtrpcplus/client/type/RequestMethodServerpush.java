@@ -59,8 +59,7 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 		 */
 		@Override
 		public void onAnswer(final String orgResponse) {
-			assert (orgResponse.startsWith("p") || orgResponse.startsWith("a") || orgResponse.startsWith("f") || orgResponse
-					.startsWith("e")) : "Illegal ServerPush protocol";
+			assert orgResponse.startsWith("p") || orgResponse.startsWith("a") || orgResponse.startsWith("f") || orgResponse.startsWith("e") : "Illegal ServerPush protocol";
 
 			if (orgResponse.startsWith("e-")) {
 				callback.onError(null, new InternalServerException(orgResponse.substring(2)));
@@ -107,7 +106,7 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
 	@Override
 	public Request call(String requestData, RequestCallback requestCallback) {
-		assert (requestCallback != null);
+		assert requestCallback != null;
 		final String uuid = uuidfactory.randomUUID();
 		addRequest(new ServerpushRequest("s" + uuid + "#" + requestData, requestCallback));
 		return new Request() {
@@ -118,7 +117,7 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
 			@Override
 			public boolean isPending() {
-				assert (false) : "Not supported yet";
+				assert false : "Not supported yet";
 				return true;
 			}
 		};

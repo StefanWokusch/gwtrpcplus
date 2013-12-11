@@ -36,7 +36,7 @@ public abstract class GwtRpcProxy extends RemoteServiceProxy {
     String realMethodName = methodName.substring(methodName.lastIndexOf(".") + 1);
 
     RequestMethod method = methods.get(realMethodName);
-    assert (method != null) : "Method " + realMethodName + " of " + this.getClass() + " isn't registrerd";
+    assert method != null : "Method " + realMethodName + " of " + this.getClass() + " isn't registrerd";
 
     RequestCallback requestCallback = doCreateRequestCallback(responseReader, methodName, statsContext, callback);
 

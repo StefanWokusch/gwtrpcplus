@@ -24,7 +24,7 @@ public abstract class AbstractRequestMethod implements RequestMethod, Connection
   }
 
   private void assertInit() {
-    assert (handler != null) : "No Handler set";
+    assert handler != null : "No Handler set";
   }
 
 }

@@ -34,7 +34,8 @@ public class ModuleGwtRpcPlusWebsocket extends WebsocketModule {
 			added = true;
 		} catch (ClassNotFoundException e) {
 			// Ignore when not added
-		} catch (Throwable e) {
+			logger.trace("Jetty-Websockets cant be installed", e);
+		} catch (Exception e) {
 			logger.trace("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception", e);
 			logger.warn("Ignoring creation the WebSocketServlet. Using only HTTP Calls. Exception:" + e.getClass().getName()
 					+ " :: " + e.getMessage());

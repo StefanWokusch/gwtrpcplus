@@ -3,7 +3,7 @@ package com.googlecode.gwtrpcplus.client.util.websocket;
 import com.google.gwt.core.client.GWT;
 
 public class WebSocket {
-	public static interface Callback {
+	public interface Callback {
 		void onOpen();
 
 		void onClose(int code, String reason);

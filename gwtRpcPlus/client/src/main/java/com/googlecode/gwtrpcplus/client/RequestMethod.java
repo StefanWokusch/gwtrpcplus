@@ -8,7 +8,7 @@ import com.google.gwt.http.client.RequestCallback;
  */
 public interface RequestMethod {
 
-	public static interface RequestPlus {
+	interface RequestPlus {
 		/**
 		 * @return the rpc-call infos for the Server
 		 */
@@ -54,7 +54,7 @@ public interface RequestMethod {
 		String getId();
 	}
 
-	public static interface ConnectionHandler {
+	interface ConnectionHandler {
 		/**
 		 * Adds a Request and send it to the Server
 		 * 

@@ -6,7 +6,7 @@ import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusBasicServlet;
 
 public interface MyTimer {
 
-  public static abstract class DefaultTimer implements MyTimer {
+  abstract class DefaultTimer implements MyTimer {
     /**
      * ms to fire a timeout
      * 

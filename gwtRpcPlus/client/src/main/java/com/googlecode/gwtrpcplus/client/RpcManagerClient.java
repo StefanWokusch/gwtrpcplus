@@ -57,7 +57,7 @@ public class RpcManagerClient {
 		DISCONNECTED, TRYCONNECT, CONNECTED
 	}
 
-	private class ConnectionWrapper {
+	private static class ConnectionWrapper {
 		public Connection connection;
 		public ConnectionState state = ConnectionState.DISCONNECTED;
 
@@ -99,7 +99,7 @@ public class RpcManagerClient {
 					schedule();
 					if (data.isEmpty())
 						return;
-					assert (data.contains("#")) : "Illegal protocol: \"" + data + "\"";
+					assert data.contains("#") : "Illegal protocol: \"" + data + "\"";
 					log("recieve from " + c.getClass() + " " + (data.length() <= 100 ? data : data.subSequence(0, 100)));
 
 					for (RpcManagerHandler handler : handlers)
@@ -114,7 +114,7 @@ public class RpcManagerClient {
 						ConnectionWrapper lastActive = getActiveConnection();
 
 						wrapper.state = ConnectionState.DISCONNECTED;
-						RpcManagerClient.this.onDisconnect(c);
+						RpcManagerClient.this.onDisconnect();
 
 						if (lastActive != getActiveConnection())
 							for (RpcManagerHandler h : handlers)
@@ -124,12 +124,12 @@ public class RpcManagerClient {
 
 				@Override
 				public void onConnected() {
-					assert (wrapper.state == ConnectionState.TRYCONNECT) : "You cant call onconnected when you are "
+					assert wrapper.state == ConnectionState.TRYCONNECT : "You cant call onconnected when you are "
 							+ wrapper.state;
 					// ConnectionWrapper lastActive = getActiveConnection();
 
 					wrapper.state = ConnectionState.CONNECTED;
-					RpcManagerClient.this.onConnected(c);
+					RpcManagerClient.this.onConnected();
 
 					// Removed because we need to call this for http-polling state
 					// if (lastActive != getActiveConnection())
@@ -173,7 +173,7 @@ public class RpcManagerClient {
 		}
 	}
 
-	private void onDisconnect(Connection c) {
+	private void onDisconnect() {
 		ConnectionWrapper activeConnection = getActiveConnection();
 		if (activeConnection == null)
 			for (ConnectionWrapper w : connections)
@@ -183,9 +183,9 @@ public class RpcManagerClient {
 				}
 	}
 
-	private void onConnected(Connection c) {
+	private void onConnected() {
 		ConnectionWrapper activeConnection = getActiveConnection();
-		assert (activeConnection != null);
+		assert activeConnection != null;
 		boolean isLowerThanActive = false;
 		for (ConnectionWrapper w : connections) {
 			isLowerThanActive = isLowerThanActive || w.equals(activeConnection);
@@ -210,13 +210,13 @@ public class RpcManagerClient {
 		@Override
 		public void removeRequest(RequestPlus request) {
 			String id = request.getId();
-			assert (id != null) : "No ID saved";
+			assert id != null : "No ID saved";
 			RequestPlus r = requests.remove(id);
 			if (r == null) {
 				log("Warn: Remove a request, that not exist ignored");
 				return;
 			}
-			assert (request == r);
+			assert request == r;
 			checkPending();
 			// for (Entry<String, RequestPlus> e : requests.entrySet())
 			// if (e.getValue() == request) {
@@ -239,7 +239,7 @@ public class RpcManagerClient {
 	/**
 	 * Handler for state updates
 	 */
-	public static interface RpcManagerHandler {
+	public interface RpcManagerHandler {
 		/**
 		 * Called when the currentConnection changed (like websockets connected)
 		 * 

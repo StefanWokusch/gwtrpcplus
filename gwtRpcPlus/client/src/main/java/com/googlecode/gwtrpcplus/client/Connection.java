@@ -4,7 +4,7 @@ package com.googlecode.gwtrpcplus.client;
  * Connection to the Server (example: websocket, Longpolling,...)
  */
 public interface Connection {
-  public static interface RecieveHandler {
+  interface RecieveHandler {
     /**
      * Called when the Server responds some answers
      * 

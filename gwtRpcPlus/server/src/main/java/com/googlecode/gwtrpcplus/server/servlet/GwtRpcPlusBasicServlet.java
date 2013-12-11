@@ -23,7 +23,7 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	@Inject
-	private RpcManagerServer manager;
+	private transient RpcManagerServer manager;
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

@@ -13,7 +13,7 @@ public abstract class AbstractConnection implements Connection, RecieveHandler {
   }
 
   private void assertInit() {
-    assert (handler != null) : "No Handler set";
+    assert handler != null : "No Handler set";
   }
 
   @Override

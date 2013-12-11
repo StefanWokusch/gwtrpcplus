@@ -30,10 +30,10 @@ import com.googlecode.gwtrpcplus.server.util.Logger;
 public class GwtRpcPlusJettyWebsocket extends WebSocketServlet {
 	private static final long serialVersionUID = 1L;
 
-	private final static Logger logger = new Logger(GwtRpcPlusJettyWebsocket.class);
+	private transient final static Logger logger = new Logger(GwtRpcPlusJettyWebsocket.class);
 
 	@Inject
-	private Provider<GwtRpcSocket> provider;
+	private transient Provider<GwtRpcSocket> provider;
 
 	private final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
 

@@ -12,170 +12,176 @@ import com.googlecode.gwtrpcplus.shared.InternalServerException;
 import com.googlecode.gwtrpcplus.shared.PrioritisedRequest;
 import com.googlecode.gwtrpcplus.shared.TimeoutException;
 
-
 public class RequestMethodQueued extends AbstractRequestMethod {
-  // Visible for tests only
-  public final static String REQUEST_NAME = "q";
+	// Visible for tests only
+	public final static String REQUEST_NAME = "q";
 
-  private final String serviceName;
+	private final String serviceName;
 
-  private final boolean resendAllowed;
+	private final boolean resendAllowed;
 
-  private final int paralellRequests;
+	private final int paralellRequests;
 
-  public RequestMethodQueued(String serviceName, int paralellRequests, boolean resendAllowed) {
-    this.serviceName = serviceName;
-    this.resendAllowed = resendAllowed;
-    this.paralellRequests = paralellRequests;
-  }
+	public RequestMethodQueued(String serviceName, int paralellRequests, boolean resendAllowed) {
+		this.serviceName = serviceName;
+		this.resendAllowed = resendAllowed;
+		this.paralellRequests = paralellRequests;
+	}
 
-  protected MyScheduler scheduler;
+	protected MyScheduler scheduler;
 
-  private void scheduleFinaly(ScheduledCommand cmd) {
-    if (scheduler == null)
-      scheduler = new MyScheduler.DefaultScheduler();
-    scheduler.scheduleFinaly(cmd);
-  }
+	private void scheduleFinaly(ScheduledCommand cmd) {
+		if (scheduler == null)
+			scheduler = new MyScheduler.DefaultScheduler();
+		scheduler.scheduleFinaly(cmd);
+	}
 
 	private final class QueueRequest extends AbstractRequestPlus implements Comparable<QueueRequest> {
-    private final String requestData;
-    private final RequestCallback callback;
+		private final String requestData;
+		private final RequestCallback callback;
 
-    private boolean pending = false;
-    private boolean canceled = false;
+		private boolean pending = false;
+		private boolean canceled = false;
 
-    private double priority = 0;
+		private double priority = 0;
 
-    private final PrioritisedRequest request = new PrioritisedRequest() {
-      @Override
-      public void cancel() {
-        if (pending) {
-          canceled = true;
-        } else
-          cancelQueue(QueueRequest.this);
-      }
+		private long created = System.currentTimeMillis();
 
-      @Override
-      public boolean isPending() {
-        return pending;
-      }
+		private final PrioritisedRequest request = new PrioritisedRequest() {
+			@Override
+			public void cancel() {
+				if (pending) {
+					canceled = true;
+				} else
+					cancelQueue(QueueRequest.this);
+			}
 
-      @Override
-      public void setPriority(double priority) {
-        if (!pending && QueueRequest.this.priority != priority) {
-          QueueRequest.this.priority = priority;
-          // Readd it
-          cancelQueue(QueueRequest.this);
-          queue(QueueRequest.this);
-        }
-      }
-    };
+			@Override
+			public boolean isPending() {
+				return pending;
+			}
 
-    @Override
-    public String getRequestTypeName() {
-      return REQUEST_NAME;
-    }
+			@Override
+			public void setPriority(double priority) {
+				if (!pending && QueueRequest.this.priority != priority) {
+					QueueRequest.this.priority = priority;
+					// Readd it
+					cancelQueue(QueueRequest.this);
+					queue(QueueRequest.this);
+				}
+			}
+		};
 
-    private QueueRequest(String requestData, RequestCallback callback) {
-      this.requestData = requestData;
-      this.callback = callback;
-    }
+		@Override
+		public String getRequestTypeName() {
+			return REQUEST_NAME;
+		}
 
-    @Override
-    public String getRequestString() {
-      return requestData;
-    }
+		private QueueRequest(String requestData, RequestCallback callback) {
+			this.requestData = requestData;
+			this.callback = callback;
+		}
 
-    @Override
-    public String getServiceName() {
-      return serviceName;
-    }
+		@Override
+		public String getRequestString() {
+			return requestData;
+		}
 
-    @Override
-    public void onAnswer(String answer) {
-      removeRequest(this);
-      finishAsking();
-      if (!canceled)
-        if (answer.startsWith("+")) {
-          RequestHelper.process(callback, answer.substring(1));
-        } else {
-          callback.onError(null, new InternalServerException(answer.substring(1)));
-        }
-    }
+		@Override
+		public String getServiceName() {
+			return serviceName;
+		}
 
-    @Override
-    public boolean onTimeout() {
-      if (canceled) {
-        removeRequest(this);
-        finishAsking();
-        return false;
-      }
+		@Override
+		public void onAnswer(String answer) {
+			removeRequest(this);
+			finishAsking();
+			if (!canceled)
+				if (answer.startsWith("+")) {
+					RequestHelper.process(callback, answer.substring(1));
+				} else {
+					callback.onError(null, new InternalServerException(answer.substring(1)));
+				}
+		}
 
-      if (!resendAllowed) {
-        removeRequest(this);
-        finishAsking();
-        if (!canceled)
-          callback.onError(null, new TimeoutException(resendAllowed));
-      }
-      return resendAllowed;
-    }
+		@Override
+		public boolean onTimeout() {
+			if (canceled) {
+				removeRequest(this);
+				finishAsking();
+				return false;
+			}
 
-    public Request getRequest() {
-      return request;
-    }
+			if (!resendAllowed) {
+				removeRequest(this);
+				finishAsking();
+				if (!canceled)
+					callback.onError(null, new TimeoutException(resendAllowed));
+			}
+			return resendAllowed;
+		}
 
-    public void send() {
-      assert (!pending);
-      pending = true;
-      addRequest(this);
-    }
+		public Request getRequest() {
+			return request;
+		}
 
-    @Override
-    public int compareTo(QueueRequest o) {
-      return ((Double) priority).compareTo(o.priority);
-    }
-  }
+		public void send() {
+			assert !pending;
+			pending = true;
+			addRequest(this);
+		}
 
-  @Override
-  public Request call(String requestData, RequestCallback requestCallback) {
-    QueueRequest request = new QueueRequest(requestData, requestCallback);
-    queue(request);
-    return request.getRequest();
-  }
+		@Override
+		public int compareTo(QueueRequest o) {
+			if (o == this)
+				return 0;
+			int compareTo = ((Double) priority).compareTo(o.priority);
+			if (compareTo != 0)
+				return compareTo;
+			return ((Long) created).compareTo(o.created);
+		}
+	}
 
-  private void queue(QueueRequest request) {
-    queued.add(request);
+	@Override
+	public Request call(String requestData, RequestCallback requestCallback) {
+		QueueRequest request = new QueueRequest(requestData, requestCallback);
+		queue(request);
+		return request.getRequest();
+	}
 
-    askNext();
-  }
+	private void queue(QueueRequest request) {
+		queued.add(request);
 
-  private int loadingCount = 0;
+		askNext();
+	}
 
-  private void finishAsking() {
-    loadingCount--;
-    askNext();
-  }
+	private int loadingCount = 0;
 
-  private void askNext() {
-//    System.out.println("Queued: " + queued.size());
-    scheduleFinaly(new ScheduledCommand() {
-      @Override
-      public void execute() {
-        if (loadingCount < paralellRequests) {
-          QueueRequest request = queued.poll();
-          if (request != null) {
-            loadingCount++;
-            request.send();
-          }
-        }
-      }
-    });
-  }
+	private void finishAsking() {
+		loadingCount--;
+		askNext();
+	}
 
-  private void cancelQueue(QueueRequest request) {
-    queued.remove(request);
-  }
+	private void askNext() {
+		// System.out.println("Queued: " + queued.size());
+		scheduleFinaly(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				if (loadingCount < paralellRequests) {
+					QueueRequest request = queued.poll();
+					if (request != null) {
+						loadingCount++;
+						request.send();
+					}
+				}
+			}
+		});
+	}
 
-  private final PriorityQueue<QueueRequest> queued = new PriorityQueue<QueueRequest>();
+	private void cancelQueue(QueueRequest request) {
+		queued.remove(request);
+	}
+
+	private final PriorityQueue<QueueRequest> queued = new PriorityQueue<QueueRequest>();
 
 }

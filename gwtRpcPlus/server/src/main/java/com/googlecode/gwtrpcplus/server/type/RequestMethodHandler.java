@@ -3,7 +3,7 @@ package com.googlecode.gwtrpcplus.server.type;
 import javax.servlet.http.HttpServletRequest;
 
 public interface RequestMethodHandler {
-  public interface RequestMethodAnswerer {
+  interface RequestMethodAnswerer {
     void send(String answer);
   }
 

@@ -5,16 +5,15 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 public interface MyScheduler {
 
-  public static class DefaultScheduler implements MyScheduler {
+	class DefaultScheduler implements MyScheduler {
+		public DefaultScheduler() {
+		}
 
-    public DefaultScheduler() {
-    }
+		@Override
+		public void scheduleFinaly(ScheduledCommand cmd) {
+			Scheduler.get().scheduleFinally(cmd);
+		}
+	}
 
-    @Override
-    public void scheduleFinaly(ScheduledCommand cmd) {
-      Scheduler.get().scheduleFinally(cmd);
-    }
-  }
-
-  void scheduleFinaly(ScheduledCommand cmd);
+	void scheduleFinaly(ScheduledCommand cmd);
 }

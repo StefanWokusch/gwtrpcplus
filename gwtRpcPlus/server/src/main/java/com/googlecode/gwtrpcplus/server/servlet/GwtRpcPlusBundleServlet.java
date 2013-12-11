@@ -19,7 +19,7 @@ public class GwtRpcPlusBundleServlet extends GwtRpcPlusBasicServlet {
 	private static final long serialVersionUID = 1L;
 
 	@Inject
-	private RpcManagerServer manager;
+	private transient RpcManagerServer manager;
 
 	@Override
 	protected void request(HttpServletRequest request, HttpServletResponse resp) throws IOException {
@@ -33,8 +33,7 @@ public class GwtRpcPlusBundleServlet extends GwtRpcPlusBasicServlet {
 				// No more Requests
 				String response = finalResponse.toString();
 				if (!response.isEmpty()) {
-					boolean gzipEncode = RPCServletUtils.acceptsGzipEncoding(request)
-							&& RPCServletUtils.exceedsUncompressedContentLengthLimit(response);
+					boolean gzipEncode = RPCServletUtils.acceptsGzipEncoding(request) && RPCServletUtils.exceedsUncompressedContentLengthLimit(response);
 
 					RPCServletUtils.writeResponse(getServletContext(), resp, response, gzipEncode);
 				} else {

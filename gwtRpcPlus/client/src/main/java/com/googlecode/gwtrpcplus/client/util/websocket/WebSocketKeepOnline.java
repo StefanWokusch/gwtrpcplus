@@ -37,7 +37,7 @@ public class WebSocketKeepOnline {
 	}
 
 	public void send(String message) {
-		assert (websocket.isConnected()) : "You can only call send when the Websocket is connected";
+		assert websocket.isConnected() : "You can only call send when the Websocket is connected";
 		websocket.send(message);
 	}
 

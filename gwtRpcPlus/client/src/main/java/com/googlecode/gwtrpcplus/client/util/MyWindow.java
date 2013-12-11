@@ -6,8 +6,7 @@ import com.google.gwt.user.client.Window.ClosingHandler;
 
 public interface MyWindow {
 
-  public static class DefaultWindow implements MyWindow {
-
+  class DefaultWindow implements MyWindow {
     public DefaultWindow() {
     }
 
