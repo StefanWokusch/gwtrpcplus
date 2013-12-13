@@ -15,7 +15,7 @@ public class WebSocket {
 
 	private final Callback callback;
 
-	private Object ws;
+	protected Object ws;
 
 	public WebSocket(Callback callback) {
 		this.callback = callback;
@@ -23,7 +23,7 @@ public class WebSocket {
 
 	private boolean isConnected = false;
 
-	private final void onopen() {
+	protected final void onopen() {
 		isConnected = true;
 		try {
 			callback.onOpen();
@@ -35,7 +35,7 @@ public class WebSocket {
 		}
 	}
 
-	private final void onclose(int code, String reason) {
+	protected final void onclose(int code, String reason) {
 		isConnected = false;
 		ws = null;
 
@@ -49,7 +49,7 @@ public class WebSocket {
 		}
 	}
 
-	private final void onmessage(String message) {
+	protected final void onmessage(String message) {
 		try {
 			callback.onMessage(message);
 		} catch (Throwable e) {
@@ -60,7 +60,7 @@ public class WebSocket {
 		}
 	}
 
-	private final void onerror() {
+	protected final void onerror() {
 		try {
 
 			callback.onError();
