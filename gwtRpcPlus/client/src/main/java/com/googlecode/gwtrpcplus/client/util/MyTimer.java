@@ -1,7 +1,7 @@
 package com.googlecode.gwtrpcplus.client.util;
 
 import com.google.gwt.user.client.Timer;
-import com.googlecode.gwtrpcplus.server.servlet.GwtRpcPlusBasicServlet;
+import com.googlecode.gwtrpcplus.server.internal.servlet.GwtRpcPlusBasicServlet;
 
 
 public interface MyTimer {
