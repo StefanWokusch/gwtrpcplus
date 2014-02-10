@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>gwtRpcPlus</artifactId>
 		<groupId>com.googlecode.gwtrpcplus</groupId>
-		<version>0.0.3-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>gwtRpcPlusClient</artifactId>
