@@ -33,9 +33,17 @@ public class GwtRpcPlusFilter implements Filter {
   private static final String ATTRIBUTE_NAME = GwtRpcPlusContext.class.getName();
 
   private ServletContext servletContext;
+  private GwtRpcPlusContext context;
 
   protected ServletContext getServletContext() {
     return servletContext;
+  }
+
+  protected GwtRpcPlusContext getContext(ServletContext servletContext) {
+    if (context == null) {
+      context = getGwtRpcPlusContext(servletContext);
+    }
+    return context;
   }
 
   public static GwtRpcPlusContext getGwtRpcPlusContext(ServletContext servletContext) {
@@ -45,6 +53,10 @@ public class GwtRpcPlusFilter implements Filter {
       setGwtRpcPlusContext(servletContext, instance);
     }
     return instance;
+  }
+
+  public void setGwtRpcPlusContext(GwtRpcPlusContext context) {
+    this.context = context;
   }
 
   /**
@@ -69,7 +81,7 @@ public class GwtRpcPlusFilter implements Filter {
   public void init(FilterConfig filterConfig) throws ServletException {
     servletContext = filterConfig.getServletContext();
 
-    GwtRpcPlusContext gwtRpcPlusContext = getGwtRpcPlusContext(servletContext);
+    GwtRpcPlusContext gwtRpcPlusContext = getContext(servletContext);
     RpcHelper helper = new RpcHelper(gwtRpcPlusContext);
 
     RequestMethodHandlerQueued queued = new RequestMethodHandlerQueued(helper);

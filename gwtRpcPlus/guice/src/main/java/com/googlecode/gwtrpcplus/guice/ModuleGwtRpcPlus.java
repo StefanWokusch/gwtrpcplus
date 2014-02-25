@@ -46,11 +46,11 @@ public class ModuleGwtRpcPlus extends ServletModule {
 
   @Override
   protected final void configureServlets() {
+    GwtRpcPlusFilter filter = new GwtRpcPlusFilter();
+    filter.setGwtRpcPlusContext(context);
 
-    filter("/*").through(new GwtRpcPlusFilter());
+    filter("/*").through(filter);
     requestInjection(context);
-    GwtRpcPlusFilter.setGwtRpcPlusContext(getServletContext(), context);
-
 
     // Place for the user to add custom Code, when inherit from this Module
     configureCustomServlets();
