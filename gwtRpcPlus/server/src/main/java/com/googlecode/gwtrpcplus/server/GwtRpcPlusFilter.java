@@ -144,13 +144,10 @@ public class GwtRpcPlusFilter implements Filter {
       return false;
     path = path.substring(1);
 
-    // Find Module
-    String[] split = path.split("/");
-    if (split.length != 2)
+    if(!path.contains("/"))
       return false;
-
-    // String moduleName = split[0];
-    String servletUri = split[1];
+    
+    String servletUri = path.substring(path.lastIndexOf("/"));
 
     HttpServlet servlet = getServlet(servletUri);
     if (servlet != null) {
