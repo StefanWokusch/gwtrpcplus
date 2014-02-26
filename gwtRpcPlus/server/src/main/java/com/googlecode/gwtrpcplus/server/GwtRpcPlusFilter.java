@@ -147,7 +147,7 @@ public class GwtRpcPlusFilter implements Filter {
     if(!path.contains("/"))
       return false;
     
-    String servletUri = path.substring(path.lastIndexOf("/"));
+    String servletUri = path.substring(path.lastIndexOf("/") + 1);
 
     HttpServlet servlet = getServlet(servletUri);
     if (servlet != null) {
