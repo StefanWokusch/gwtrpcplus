@@ -14,39 +14,54 @@ import com.googlecode.gwtrpcplus.server.GwtRpcPlusContext;
 import com.googlecode.gwtrpcplus.server.GwtRpcPlusFilter;
 
 public class ModuleGwtRpcPlus extends ServletModule {
-//  private final static Logger logger = new Logger(ModuleGwtRpcPlus.class);
+  // private final static Logger logger = new Logger(ModuleGwtRpcPlus.class);
 
   private final String modulename;
-  private Set<Class<? extends RemoteServiceServlet>> servletClasses;
+  private final GwtRpcPlusFilter filter;
+  private Set<Class<? extends RemoteServiceServlet>> servletClasses = new HashSet<Class<? extends RemoteServiceServlet>>();
 
   /**
    * @param base for example the projectName
-   * @param servletClasses Set of all ServletClasses
    */
-  public ModuleGwtRpcPlus(String modulename,
-      @SuppressWarnings("unchecked") Class<? extends RemoteServiceServlet>... servletClasses) {
-    Set<Class<? extends RemoteServiceServlet>> classes = new HashSet<Class<? extends RemoteServiceServlet>>();
-    for (Class<? extends RemoteServiceServlet> c : servletClasses)
-      classes.add(c);
-
-    this.modulename = modulename;
-    this.servletClasses = classes;
+  public ModuleGwtRpcPlus(String modulename) {
+    this(modulename, new GwtRpcPlusFilter());
   }
 
   /**
    * @param base for example the projectName
-   * @param servletClasses Set of all ServletClasses
    */
-  public ModuleGwtRpcPlus(String modulename, Set<Class<? extends RemoteServiceServlet>> servletClasses) {
+  public ModuleGwtRpcPlus(String modulename, GwtRpcPlusFilter filter) {
     this.modulename = modulename;
-    this.servletClasses = servletClasses;
+    this.filter = filter;
+    this.filter.setModulename(modulename);
+  }
+
+  /**
+   * Call this to register a Class to be used in the RpcPlus.
+   * 
+   * @param clazz ServiceClass Implementation
+   * @return itselfe (builder-Pattern)
+   */
+  public ModuleGwtRpcPlus register(Class<? extends RemoteServiceServlet> clazz) {
+    servletClasses.add(clazz);
+    return this;
+  }
+
+  /**
+   * Call this to register many Class to be used in the RpcPlus.
+   * 
+   * @param clazz ServiceClass Implementation
+   * @return itselfe (builder-Pattern)
+   */
+  public ModuleGwtRpcPlus register(Set<Class<? extends RemoteServiceServlet>> classes) {
+    servletClasses.addAll(classes);
+    return this;
   }
 
   private final GwtRpcPlusContext context = new GuiceGwtRpcPlusContext();
 
   @Override
   protected final void configureServlets() {
-    GwtRpcPlusFilter filter = new GwtRpcPlusFilter();
     filter.setGwtRpcPlusContext(context);
 
     filter("/*").through(filter);
@@ -54,7 +69,6 @@ public class ModuleGwtRpcPlus extends ServletModule {
 
     // Place for the user to add custom Code, when inherit from this Module
     configureCustomServlets();
-
   }
 
   private class GuiceGwtRpcPlusContext implements GwtRpcPlusContext {
@@ -80,7 +94,7 @@ public class ModuleGwtRpcPlus extends ServletModule {
       if (servlets == null) {
         servlets = customServlets;
         customServlets = null;
-        
+
         // TODO get Servlets from guice-servlet?
         for (Class<? extends RemoteServiceServlet> servletclass : servletClasses) {
           servlets.add(injector.getInstance(servletclass));

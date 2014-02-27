@@ -41,8 +41,8 @@ public class GwtRpcPlusWebsocketFilter extends GwtRpcPlusFilter {
 
         MyConfigurator configurator = new MyConfigurator(servletContext.getContextPath(), manager);
 
-        ServerEndpointConfig cfg = ServerEndpointConfig.Builder.create(GwtRpcPlusWebsocket.class,
-            getWebsocketPath(modulename)).configurator(configurator).build();
+        ServerEndpointConfig cfg = ServerEndpointConfig.Builder.create(GwtRpcPlusWebsocket.class, getWebsocketPath()).configurator(
+            configurator).build();
         serverContainer.addEndpoint(cfg);
         added = true;
       } catch (DeploymentException e) {
@@ -56,11 +56,10 @@ public class GwtRpcPlusWebsocketFilter extends GwtRpcPlusFilter {
     }
   }
 
-
-  // FIXME
-  private String modulename = "enterprisedemo";
-
-  private String getWebsocketPath(String modulename) {
+  private String getWebsocketPath() {
+    String modulename = getModulename();
+    if(modulename==null)
+      throw new IllegalStateException("A modulename is needed to use Websocket-Extension of GwtRpcPlus");
     return "/" + modulename + "/gwtRpcPlusWebsocket";
   }
 

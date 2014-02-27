@@ -72,6 +72,17 @@ public class GwtRpcPlusFilter implements Filter {
     servletContext.setAttribute(ATTRIBUTE_NAME, instance);
   }
 
+
+  private String modulename;
+
+  public void setModulename(String modulename) {
+    this.modulename = modulename;
+  }
+
+  public String getModulename() {
+    return modulename;
+  }
+
   private final HashMap<String, HttpServlet> servlets = new HashMap<>();
 
   protected RpcManagerServer manager;
@@ -144,9 +155,9 @@ public class GwtRpcPlusFilter implements Filter {
       return false;
     path = path.substring(1);
 
-    if(!path.contains("/"))
+    if (!path.contains("/"))
       return false;
-    
+
     String servletUri = path.substring(path.lastIndexOf("/") + 1);
 
     HttpServlet servlet = getServlet(servletUri);
@@ -166,5 +177,4 @@ public class GwtRpcPlusFilter implements Filter {
   @Override
   public void destroy() {
   }
-
 }

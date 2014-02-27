@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.googlecode.gwtrpcplus</groupId>
 	<artifactId>gwtRpcPlus</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.1.0-SNAPSHOT</version>
 	<name>GwtRpcPlus</name>
   <description>Extended Gwt-Rpc</description>
   <url>http://code.google.com/p/gwtrpcplus/</url>
