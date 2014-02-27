@@ -33,9 +33,9 @@ public class GwtRpcPlusWebsocketFilter extends GwtRpcPlusFilter {
     // System.out.println(attributeName + " => " + servletContext.getAttribute(attributeName));
     // }
 
-    if (serverContainer == null)
+    if (serverContainer == null) {
       logger.warn("No JSR-356 Websocket-Support found for " + servletContext.getServerInfo());
-    else {
+    } else {
       try {
         serverContainer.setDefaultMaxTextMessageBufferSize(1000000);
 
@@ -49,16 +49,15 @@ public class GwtRpcPlusWebsocketFilter extends GwtRpcPlusFilter {
         logger.error("Error while deploying WebsocketEndpoint", e);
       }
       logger.info("Websocket-Support initialized.");
-
-      // Add dummy if not supported
-      if (!added)
-        super.initWebsocket();
     }
+    // Add dummy if not supported
+    if (!added)
+      super.initWebsocket();
   }
 
   private String getWebsocketPath() {
     String modulename = getModulename();
-    if(modulename==null)
+    if (modulename == null)
       throw new IllegalStateException("A modulename is needed to use Websocket-Extension of GwtRpcPlus");
     return "/" + modulename + "/gwtRpcPlusWebsocket";
   }
