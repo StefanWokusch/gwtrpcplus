@@ -9,86 +9,92 @@ import com.googlecode.gwtrpcplus.client.util.websocket.WebSocket.Callback;
 
 public class ConnectionWebsocket extends AbstractConnection {
 
-	/**
-	 * The websocket keeps connecting itselve, so don't connect while connecting
-	 */
-	private boolean connecting = false;
+  /**
+   * The websocket keeps connecting itselve, so don't connect while connecting
+   */
+  private boolean connecting = false;
 
-	@Override
-	public String toString() {
-		return getClass().getName();
-	}
+  private final String moduleBaseUrl;
 
-	@Override
-	public void connect() {
-		if (websocket.isSupported() && !connecting) {
-			connecting = true;
-			websocket.connect(GWT.getModuleBaseURL().replace("http:", "ws:").replace("https:", "wss:")
-					+ "gwtRpcPlusWebsocket");
-		}
-	}
+  @Override
+  public String toString() {
+    return getClass().getName();
+  }
 
-	@Override
-	public void disconnect() {
-		websocket.disconnect();
-		connecting = false;
-		onDisconnect();
-	}
+  @Override
+  public void connect() {
+    if (websocket.isSupported() && !connecting) {
+      connecting = true;
+      websocket.connect(moduleBaseUrl.replace("http:", "ws:").replace("https:", "wss:") + "gwtRpcPlusWebsocket");
+    }
+  }
 
-	private final WebSocketKeepOnline websocket;
+  @Override
+  public void disconnect() {
+    websocket.disconnect();
+    connecting = false;
+    onDisconnect();
+  }
 
-	public ConnectionWebsocket() {
-		websocket = new WebSocketKeepOnline(callback);
-	}
+  private final WebSocketKeepOnline websocket;
 
-	private final Callback callback = new Callback() {
-		@Override
-		public void onOpen() {
-			RpcManagerClient.log("Websocket opened");
-			websocket.send(Client.id + "#" + GWT.getPermutationStrongName() + "#" + GWT.getModuleBaseURL());
-			try {
-				onConnected();
-			} catch (Throwable e) {
-				// TODO Remove this
-				e.printStackTrace();
-			}
-		}
+  public ConnectionWebsocket() {
+    this(GWT.getModuleBaseURL());
+  }
 
-		private StringBuffer buffer = new StringBuffer();
+  public ConnectionWebsocket(String moduleBaseUrl) {
+    this.moduleBaseUrl = moduleBaseUrl;
+    websocket = new WebSocketKeepOnline(callback);
+  }
 
-		@Override
-		public void onMessage(String message) {
-			// System.out.println("recieve:" + message.length());
-			buffer.append(message);
-			if (message.endsWith("\n")) {
-				// System.out.println("Finished Message:" + buffer.length());
-				onRecieve(buffer.toString());
+  private final Callback callback = new Callback() {
+    @Override
+    public void onOpen() {
+      RpcManagerClient.log("Websocket opened");
+      websocket.send(Client.id + "#" + GWT.getPermutationStrongName() + "#" + GWT.getModuleBaseURL());
+      try {
+        onConnected();
+      } catch (Throwable e) {
+        // TODO Remove this
+        e.printStackTrace();
+      }
+    }
 
-				buffer = new StringBuffer();
-			}
-		}
+    private StringBuffer buffer = new StringBuffer();
 
-		@Override
-		public void onError() {
-			RpcManagerClient.log("Websocket error");
-		}
+    @Override
+    public void onMessage(String message) {
+      // System.out.println("recieve:" + message.length());
+      buffer.append(message);
+      if (message.endsWith("\n")) {
+        // System.out.println("Finished Message:" + buffer.length());
+        onRecieve(buffer.toString());
 
-		@Override
-		public void onClose(int code, String reason) {
-			RpcManagerClient.log("Websocket closed " + code + ": " + reason);
-			onDisconnect();
-			// TODO correct?
-			buffer = new StringBuffer();
-		}
-	};
+        buffer = new StringBuffer();
+      }
+    }
 
-	@Override
-	public void send(String request) {
-		websocket.send(request);
-	}
+    @Override
+    public void onError() {
+      RpcManagerClient.log("Websocket error");
+    }
 
-	@Override
-	public void setPending(boolean pending) {
-		// No need in websockets, its supported in the websockets inner-protocoll automatically
-	}
+    @Override
+    public void onClose(int code, String reason) {
+      RpcManagerClient.log("Websocket closed " + code + ": " + reason);
+      onDisconnect();
+      // TODO correct?
+      buffer = new StringBuffer();
+    }
+  };
+
+  @Override
+  public void send(String request) {
+    websocket.send(request);
+  }
+
+  @Override
+  public void setPending(boolean pending) {
+    // No need in websockets, its supported in the websockets inner-protocoll automatically
+  }
 }

@@ -20,6 +20,10 @@
 		values="TRUE,FALSE" />
 	<set-property name="gwtrpcplus_UseRemoteService" value="FALSE" />
 
+	<define-configuration-property name="gwtrpcplus_moduleBaseUrl"
+		is_multi_valued="false" />
+	<set-configuration-property name="gwtrpcplus_moduleBaseUrl"
+		value="{hostPageBaseUrl}{moduleName}/" />
 
 	<generate-with
 		class="com.googlecode.gwtrpcplus.rebind.ConnectionProviderGenerator">

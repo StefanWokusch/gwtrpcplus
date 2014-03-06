@@ -8,7 +8,15 @@ import com.googlecode.gwtrpcplus.client.RpcManagerClient;
 public class ConnectionHttpBundle extends ConnectionHttp {
 
 	public ConnectionHttpBundle() {
-		super(GWT.getHostPageBaseURL() + GWT.getModuleName() + "/gwtRpcPlusBundle");
+		super();
+	}
+	public ConnectionHttpBundle(String moduleBaseUrl) {
+	  super(GWT.getHostPageBaseURL() + GWT.getModuleName() + "/");
+	}
+	
+	@Override
+	protected String getServletName() {
+	  return "gwtRpcPlusBundle";
 	}
 
 	private int requestAmount = 0;
