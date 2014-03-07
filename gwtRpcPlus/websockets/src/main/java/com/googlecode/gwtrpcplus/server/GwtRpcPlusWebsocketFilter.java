@@ -56,7 +56,7 @@ public class GwtRpcPlusWebsocketFilter extends GwtRpcPlusFilter {
   }
 
   private String getWebsocketPath() {
-    String modulename = getModulename();
+    String modulename = getModuleName();
     if (modulename == null)
       throw new IllegalStateException("A modulename is needed to use Websocket-Extension of GwtRpcPlus");
     return "/" + modulename + "/gwtRpcPlusWebsocket";

@@ -33,7 +33,7 @@ public class ModuleGwtRpcPlus extends ServletModule {
   public ModuleGwtRpcPlus(String modulename, GwtRpcPlusFilter filter) {
     this.modulename = modulename;
     this.filter = filter;
-    this.filter.setModulename(modulename);
+    this.filter.setModuleName(modulename);
   }
 
   /**
@@ -62,7 +62,7 @@ public class ModuleGwtRpcPlus extends ServletModule {
 
   @Override
   protected final void configureServlets() {
-    filter.setGwtRpcPlusContext(context);
+    filter.setContext(context, getServletContext());
 
     filter("/*").through(filter);
     requestInjection(context);

@@ -13,9 +13,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-import com.googlecode.gwtrpcplus.server.internal.SimpleGwtRpcPlusContext;
 import com.googlecode.gwtrpcplus.server.internal.RpcManagerServer;
+import com.googlecode.gwtrpcplus.server.internal.SimpleGwtRpcPlusContext;
 import com.googlecode.gwtrpcplus.server.internal.servlet.GwtRpcPlusBasicServlet;
 import com.googlecode.gwtrpcplus.server.internal.servlet.GwtRpcPlusBundleServlet;
 import com.googlecode.gwtrpcplus.server.internal.servlet.GwtRpcPlusWebsocketDummy;
@@ -33,68 +32,108 @@ public class GwtRpcPlusFilter implements Filter {
   private static final String ATTRIBUTE_NAME = GwtRpcPlusContext.class.getName();
 
   private ServletContext servletContext;
-  private GwtRpcPlusContext context;
 
   protected ServletContext getServletContext() {
     return servletContext;
   }
 
-  protected GwtRpcPlusContext getContext(ServletContext servletContext) {
+  private GwtRpcPlusContext context;
+
+  /**
+   * Only use this when you sure have a servletContext
+   * 
+   * @param servletContext must be not null
+   * @return the gwtRpcPlusContext to register some Servlets
+   */
+  public GwtRpcPlusContext getContext(ServletContext servletContext) {
     if (context == null) {
+      if (servletContext == null)
+        throw new IllegalArgumentException("servletContext must not be null");
       context = getGwtRpcPlusContext(servletContext);
     }
     return context;
   }
 
+  /**
+   * Sets the Context for the Filter. This is only need in special environments, so make sure, you
+   * need to do it.
+   * 
+   * @param context the context to set
+   * @param servletContext optional ServletContext, to register the context
+   */
+  public void setContext(GwtRpcPlusContext context, ServletContext servletContext) {
+    if (this.context != null)
+      throw new IllegalStateException(
+          "GwtRpcPlusContext is already set. This could caused for example using multiple GuiceModules.");
+    this.context = context;
+
+    // in some cases, we can have no servletContext, like guice in special environments
+    if (servletContext != null)
+      setGwtRpcPlusContext(context, servletContext);
+  }
+
+  /**
+   * Only use this, when u have no other chance to get to the GwtRpcPlusContext
+   * 
+   * @param servletContext must be not null
+   * @return the gwtRpcPlusContext to register Servlets
+   */
   public static GwtRpcPlusContext getGwtRpcPlusContext(ServletContext servletContext) {
+    if (servletContext == null)
+      throw new IllegalArgumentException("servletContext must not be null");
     GwtRpcPlusContext instance = (GwtRpcPlusContext) servletContext.getAttribute(ATTRIBUTE_NAME);
     if (instance == null) {
       instance = new SimpleGwtRpcPlusContext();
-      setGwtRpcPlusContext(servletContext, instance);
+      setGwtRpcPlusContext(instance, servletContext);
     }
     return instance;
   }
 
-  public void setGwtRpcPlusContext(GwtRpcPlusContext context) {
-    this.context = context;
-  }
 
-  /**
-   * For default usage, use getGwtRpcPlusContext()
-   * 
-   * @param servletContext
-   * @param instance
-   */
-  public static void setGwtRpcPlusContext(ServletContext servletContext, GwtRpcPlusContext instance) {
+  private static void setGwtRpcPlusContext(GwtRpcPlusContext instance, ServletContext servletContext) {
     if (servletContext.getAttribute(ATTRIBUTE_NAME) != null)
       throw new IllegalStateException("An other GwtRpcPlusContext has been initialized.");
-
     servletContext.setAttribute(ATTRIBUTE_NAME, instance);
   }
 
 
-  private String modulename;
+  private String moduleName;
 
-  public void setModulename(String modulename) {
-    this.modulename = modulename;
+  /**
+   * Sets the moduleName of the project to be used to filter only special calls
+   * 
+   * @param modulename
+   */
+  public void setModuleName(String modulename) {
+    this.moduleName = modulename;
   }
 
-  public String getModulename() {
-    return modulename;
+  /**
+   * @return the setted moduleName
+   */
+  public String getModuleName() {
+    return moduleName;
   }
 
   private final HashMap<String, HttpServlet> servlets = new HashMap<>();
 
   protected RpcManagerServer manager;
 
-
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
+    if (servletContext != null) {
+      ServletContext c = filterConfig.getServletContext();
+      // GwtRpcPlusFilter is already initialized. This should be no problem.
+      // To be able to debug, a display warning, when its another servletContext.
+      if (servletContext != c)
+        logger.warn("GwtRpcPlusFilter is already initialized with another ServletContext. This can cause some Problems");
+      return;
+    }
     servletContext = filterConfig.getServletContext();
 
+    // Initialize 
     GwtRpcPlusContext gwtRpcPlusContext = getContext(servletContext);
-    RpcHelper helper = new RpcHelper(gwtRpcPlusContext);
-
+    RpcHelper helper = new RpcHelper(servletContext, gwtRpcPlusContext);
     RequestMethodHandlerQueued queued = new RequestMethodHandlerQueued(helper);
     RequestMethodHandlerServerpush push = new RequestMethodHandlerServerpush(helper);
     RequestMethodHandlerBasic basic = new RequestMethodHandlerBasic(helper);
@@ -108,14 +147,7 @@ public class GwtRpcPlusFilter implements Filter {
 
     initWebsocket();
 
-    for (RemoteServiceServlet servlet : gwtRpcPlusContext.getServlets())
-      if (servlet.getServletConfig() == null)
-        try {
-          servlet.init(new SimpleServletConfig(servlet.getClass().getSimpleName(), servletContext));
-        } catch (ServletException e) {
-          logger.warn("Can't initialize Servlet. This can cause some Problems.", e);
-        }
-
+    helper.init();
   }
 
   protected void initWebsocket() throws ServletException {
@@ -158,7 +190,13 @@ public class GwtRpcPlusFilter implements Filter {
     if (!path.contains("/"))
       return false;
 
-    String servletUri = path.substring(path.lastIndexOf("/") + 1);
+    String[] split = path.split("/");
+
+    String servletUri = split[split.length - 1];
+    String moduleName = split[split.length - 2];
+
+    if (this.moduleName != null && !this.moduleName.equals(moduleName))
+      return false;
 
     HttpServlet servlet = getServlet(servletUri);
     if (servlet != null) {
