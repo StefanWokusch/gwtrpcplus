@@ -2,6 +2,9 @@ package com.googlecode.gwtrpcplus.server;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -119,6 +122,8 @@ public class GwtRpcPlusFilter implements Filter {
 
   protected RpcManagerServer manager;
 
+  private ScheduledExecutorService executor;
+
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
     if (servletContext != null) {
@@ -131,13 +136,15 @@ public class GwtRpcPlusFilter implements Filter {
     }
     servletContext = filterConfig.getServletContext();
 
-    // Initialize 
+    executor = createExecutor();
+
+    // Initialize
     GwtRpcPlusContext gwtRpcPlusContext = getContext(servletContext);
     RpcHelper helper = new RpcHelper(servletContext, gwtRpcPlusContext);
     RequestMethodHandlerQueued queued = new RequestMethodHandlerQueued(helper);
-    RequestMethodHandlerServerpush push = new RequestMethodHandlerServerpush(helper);
+    RequestMethodHandlerServerpush push = new RequestMethodHandlerServerpush(helper, executor);
     RequestMethodHandlerBasic basic = new RequestMethodHandlerBasic(helper);
-    manager = new RpcManagerServer(basic, push, queued);
+    manager = new RpcManagerServer(basic, push, queued, executor);
 
     GwtRpcPlusBasicServlet basicServlet = new GwtRpcPlusBasicServlet(manager);
     registerServlet("gwtRpcPlusBasic", basicServlet);
@@ -148,6 +155,10 @@ public class GwtRpcPlusFilter implements Filter {
     initWebsocket();
 
     helper.init();
+  }
+
+  protected ScheduledExecutorService createExecutor() {
+    return Executors.newScheduledThreadPool(4);
   }
 
   protected void initWebsocket() throws ServletException {
@@ -214,5 +225,11 @@ public class GwtRpcPlusFilter implements Filter {
 
   @Override
   public void destroy() {
+    try {
+      executor.shutdownNow();
+      executor.awaitTermination(10, TimeUnit.SECONDS);
+    } catch (Exception e) {
+      logger.error("Failed to shutdown ExecutorService.", e);
+    }
   }
 }

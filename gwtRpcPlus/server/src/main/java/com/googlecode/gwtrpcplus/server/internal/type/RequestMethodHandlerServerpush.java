@@ -2,7 +2,6 @@ package com.googlecode.gwtrpcplus.server.internal.type;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -32,11 +31,11 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
     return "p";
   }
 
-  // TODO inject the executor
-  private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+  private final ScheduledExecutorService executor;
 
-  public RequestMethodHandlerServerpush(RpcHelper helper) {
+  public RequestMethodHandlerServerpush(RpcHelper helper, ScheduledExecutorService executor) {
     this.helper = helper;
+    this.executor = executor;
   }
 
   interface RPCInterface {

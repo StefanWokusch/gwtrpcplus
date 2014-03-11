@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -29,9 +28,7 @@ public class RpcManagerServer {
   private final ConcurrentHashMap<String, RpcPlusClient> clients = new ConcurrentHashMap<String, RpcPlusClient>();
 
   public RpcManagerServer(RequestMethodHandlerBasic basic, RequestMethodHandlerServerpush push,
-      RequestMethodHandlerQueued queued) {
-    // TODO inject the executor
-    ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+      RequestMethodHandlerQueued queued, ScheduledExecutorService executor) {
     // TODO make configurable
     this.requestMethodHandlers = new HashMap<>();
     this.requestMethodHandlers.put(basic.getRequestTypeName(), basic);

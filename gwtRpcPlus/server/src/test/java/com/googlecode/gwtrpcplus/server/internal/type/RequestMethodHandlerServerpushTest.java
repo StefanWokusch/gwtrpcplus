@@ -6,6 +6,8 @@ import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +36,9 @@ public class RequestMethodHandlerServerpushTest {
   @Mock
   RequestMethodAnswerer answerer;
 
+  ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
+
   private RequestMethodHandlerServerpush toTest;
 
   private TestServiceImpl service;
@@ -41,7 +46,7 @@ public class RequestMethodHandlerServerpushTest {
   @Before
   public void init() throws Throwable {
     MockitoAnnotations.initMocks(this);
-    toTest = new RequestMethodHandlerServerpush(helper);
+    toTest = new RequestMethodHandlerServerpush(helper, executor);
     toTest.encoder = encoder;
     service = new TestServiceImpl();
 
