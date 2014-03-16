@@ -142,7 +142,7 @@ public class GwtRpcPlusFilter implements Filter {
     GwtRpcPlusContext gwtRpcPlusContext = getContext(servletContext);
     RpcHelper helper = new RpcHelper(servletContext, gwtRpcPlusContext);
     RequestMethodHandlerQueued queued = new RequestMethodHandlerQueued(helper);
-    RequestMethodHandlerServerpush push = new RequestMethodHandlerServerpush(helper, executor);
+    RequestMethodHandlerServerpush push = new RequestMethodHandlerServerpush(helper);
     RequestMethodHandlerBasic basic = new RequestMethodHandlerBasic(helper);
     manager = new RpcManagerServer(basic, push, queued, executor);
 

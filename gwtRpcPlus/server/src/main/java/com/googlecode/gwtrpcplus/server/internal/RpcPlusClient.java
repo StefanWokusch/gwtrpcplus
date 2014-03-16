@@ -22,7 +22,7 @@ public class RpcPlusClient {
 	/**
 	 * WARN: have to equals TimeoutTimer.TIMEOUT
 	 */
-	static final long KEEPALIVE_TIMEOUT = TimeUnit.SECONDS.toMillis(30);
+	static final long KEEPALIVE_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
 
 	private Logger logger = new Logger(RpcPlusClient.class);
 

@@ -43,10 +43,14 @@ public class ConnectionDebugWidget extends Composite {
 	private Connection currentConnection;
 
 	private void setConnection(Connection currentConnection) {
+		if (this.currentConnection != currentConnection)
+			System.out.println("CHANGED CONNECTION TO " + currentConnection);
+
 		this.currentConnection = currentConnection;
 		Scheduler.get().scheduleEntry(new ScheduledCommand() {
 			@Override
 			public void execute() {
+
 				if (ConnectionDebugWidget.this.currentConnection == null) {
 					connection.setHTML("&mdash;"); // long dash
 				} else if (ConnectionDebugWidget.this.currentConnection instanceof ConnectionWebsocket) {

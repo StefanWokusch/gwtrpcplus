@@ -9,92 +9,95 @@ import com.googlecode.gwtrpcplus.client.util.websocket.WebSocket.Callback;
 
 public class ConnectionWebsocket extends AbstractConnection {
 
-  /**
-   * The websocket keeps connecting itselve, so don't connect while connecting
-   */
-  private boolean connecting = false;
+	/**
+	 * The websocket keeps connecting itselve, so don't connect while connecting
+	 */
+	private boolean connecting = false;
 
-  private final String moduleBaseUrl;
+	private final String moduleBaseUrl;
 
-  @Override
-  public String toString() {
-    return getClass().getName();
-  }
+	@Override
+	public String toString() {
+		return getClass().getName();
+	}
 
-  @Override
-  public void connect() {
-    if (websocket.isSupported() && !connecting) {
-      connecting = true;
-      websocket.connect(moduleBaseUrl.replace("http:", "ws:").replace("https:", "wss:") + "gwtRpcPlusWebsocket");
-    }
-  }
+	@Override
+	public void connect() {
+		if (websocket.isSupported() && !connecting) {
+			connecting = true;
+			websocket.connect(moduleBaseUrl.replace("http:", "ws:").replace("https:", "wss:") + "gwtRpcPlusWebsocket");
+		}
+	}
 
-  @Override
-  public void disconnect() {
-    websocket.disconnect();
-    connecting = false;
-    onDisconnect();
-  }
+	@Override
+	public void disconnect() {
+		websocket.disconnect();
+		connecting = false;
+		onDisconnect();
+	}
 
-  private final WebSocketKeepOnline websocket;
+	private final WebSocketKeepOnline websocket;
 
-  public ConnectionWebsocket() {
-    this(GWT.getModuleBaseURL());
-  }
+	public ConnectionWebsocket() {
+		this(GWT.getModuleBaseURL());
+	}
 
-  public ConnectionWebsocket(String moduleBaseUrl) {
-    this.moduleBaseUrl = moduleBaseUrl;
-    websocket = new WebSocketKeepOnline(callback);
-  }
+	public ConnectionWebsocket(String moduleBaseUrl) {
+		this.moduleBaseUrl = moduleBaseUrl;
+		websocket = new WebSocketKeepOnline(callback);
+	}
 
-  private final Callback callback = new Callback() {
-    @Override
-    public void onOpen() {
-      RpcManagerClient.log("Websocket opened");
-      websocket.send(Client.id + "#" + GWT.getPermutationStrongName() + "#" + GWT.getModuleBaseURL());
-      try {
-        onConnected();
-      } catch (Throwable e) {
-        // TODO Remove this
-        e.printStackTrace();
-      }
-    }
+	private final Callback callback = new Callback() {
+		@Override
+		public void onOpen() {
+			RpcManagerClient.log("Websocket opened");
+			websocket.send(Client.id + "#" + GWT.getPermutationStrongName() + "#" + GWT.getModuleBaseURL());
+			try {
+				onConnected();
+			} catch (Throwable e) {
+				// TODO Remove this
+				e.printStackTrace();
+			}
+		}
 
-    private StringBuffer buffer = new StringBuffer();
+		private StringBuffer buffer = new StringBuffer();
 
-    @Override
-    public void onMessage(String message) {
-    	RpcManagerClient.log("recieve message:" + message.length()+" bytes:: "+message);
-      buffer.append(message);
-      if (message.endsWith("\n")) {
-      	RpcManagerClient.log("recieve message:" + message.length()+" bytes");
-        onRecieve(buffer.toString());
+		@Override
+		public void onMessage(String message) {
+			RpcManagerClient.log("recieve message:" + message.length() + " bytes:: " + message);
+			buffer.append(message);
+			if (message.endsWith("\n")) {
+				RpcManagerClient.log("recieve message:" + message.length() + " bytes");
+				onRecieve(buffer.toString());
 
-        buffer = new StringBuffer();
-      }
-    }
+				buffer = new StringBuffer();
+			}
+		}
 
-    @Override
-    public void onError() {
-      RpcManagerClient.log("Websocket error");
-    }
+		@Override
+		public void onError() {
+			RpcManagerClient.log("Websocket error");
+			onDisconnect();
+			// TODO correct?
+			buffer = new StringBuffer();
+		}
 
-    @Override
-    public void onClose(int code, String reason) {
-      RpcManagerClient.log("Websocket closed " + code + ": " + reason);
-      onDisconnect();
-      // TODO correct?
-      buffer = new StringBuffer();
-    }
-  };
+		@Override
+		public void onClose(int code, String reason) {
+			RpcManagerClient.log("Websocket closed " + code + ": " + reason);
+			onDisconnect();
+			// TODO correct?
+			buffer = new StringBuffer();
+		}
+	};
 
-  @Override
-  public void send(String request) {
-    websocket.send(request);
-  }
+	@Override
+	public void send(String request) {
+		websocket.send(request);
+	}
 
-  @Override
-  public void setPending(boolean pending) {
-    // No need in websockets, its supported in the websockets inner-protocoll automatically
-  }
+	@Override
+	public void setPending(boolean pending) {
+		// No need in websockets, its supported in the websockets inner-protocoll automatically
+	}
 }

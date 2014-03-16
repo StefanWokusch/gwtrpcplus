@@ -115,10 +115,11 @@ public class ConnectionHttp extends AbstractConnection {
 	private final RequestCallback callback = new RequestCallback() {
 		@Override
 		public void onResponseReceived(Request request, Response response) {
-			notresponding = response.getStatusCode() == 0;
-			if (response.getStatusCode() != Response.SC_OK) {
-				if (response.getStatusCode() != 0)// Ignore 0 (called by server don't responsed)
-					System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
+			int statusCode = response.getStatusCode();
+			notresponding = statusCode == 0;
+			if (statusCode != Response.SC_OK) {
+				if (statusCode != 0)// Ignore 0 (called by server don't responsed)
+					System.err.println("Server responsed " + statusCode + ": " + response.getStatusText());
 				else
 					onTimeout();
 			} else {

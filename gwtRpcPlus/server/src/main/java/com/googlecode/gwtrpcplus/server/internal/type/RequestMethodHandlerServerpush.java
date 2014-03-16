@@ -2,9 +2,6 @@ package com.googlecode.gwtrpcplus.server.internal.type;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,11 +28,8 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
     return "p";
   }
 
-  private final ScheduledExecutorService executor;
-
-  public RequestMethodHandlerServerpush(RpcHelper helper, ScheduledExecutorService executor) {
+  public RequestMethodHandlerServerpush(RpcHelper helper) {
     this.helper = helper;
-    this.executor = executor;
   }
 
   interface RPCInterface {
@@ -149,16 +143,6 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
 
       final AtomicInteger nextAnswerId = new AtomicInteger(0);
 
-      // Add alive Pint
-      final ScheduledFuture<?> future = executor.scheduleWithFixedDelay(new Runnable() {
-        @Override
-        public void run() {
-          final int answerId = nextAnswerId.getAndIncrement();
-          answerer.send("p" + answerId + "#");
-        }
-      }, 20, 20, TimeUnit.SECONDS);
-
-
       Object[] params = new Object[rpcRequest.getParameters().length + 1];
       int i = 0;
       for (Object o : rpcRequest.getParameters())
@@ -188,7 +172,6 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
             return;// Ignore Answer, already finished
           }
           handlers.remove(uuid);
-          future.cancel(true);
           try {
             String answer = encoder.encodeResponseForSuccess(rpcRequest.getMethod(), obj,
                 rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());
@@ -206,7 +189,6 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
             return;// Ignore Answer, already finished
           }
           handlers.remove(uuid);
-          future.cancel(true);
           try {
             String answer = encoder.encodeResponseForFailure(rpcRequest.getMethod(), caught,
                 rpcRequest.getSerializationPolicy(), rpcRequest.getFlags());

@@ -12,7 +12,7 @@ public interface TimeoutTimer {
      * 
      * WARN: have to equals {@link RpcPlusClient}s KEEPALIVE_TIMEOUT
      */
-    public static final int TIMEOUT = 30000;
+    public static final int TIMEOUT = 10000;
 
     private Timer timer = new Timer() {
       @Override

@@ -62,7 +62,6 @@ public class WebSocket {
 
 	protected final void onerror() {
 		try {
-
 			callback.onError();
 		} catch (Throwable e) {
 			if (GWT.getUncaughtExceptionHandler() != null)

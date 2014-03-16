@@ -6,7 +6,8 @@ public class WebSocketKeepOnline {
 	private WebSocket.Callback callback;
 	private String serverUrl = null;
 
-	private int timeout = 100;
+	private final static int TIMEOUT_STEPS[] = { 100, 200, 500, 600, 700, 1000, 1000, 5000 };
+	private int timeoutStep = 0;
 
 	private final WebSocket websocket = new WebSocket(new WebSocket.Callback() {
 		@Override
@@ -16,15 +17,15 @@ public class WebSocketKeepOnline {
 
 		@Override
 		public void onClose(int code, String reason) {
+			int timeout = TIMEOUT_STEPS[Math.min(TIMEOUT_STEPS.length - 1, timeoutStep)];
+			timeoutStep++;
 			webSocketConnectorTimer.schedule(timeout);
-			callback.onClose(code, reason);
-			timeout = Math.min(30000, timeout * 10);
 		}
 
 		@Override
 		public void onOpen() {
 			callback.onOpen();
-			timeout = 100;
+			timeoutStep = 0;
 		}
 
 		public void onError() {

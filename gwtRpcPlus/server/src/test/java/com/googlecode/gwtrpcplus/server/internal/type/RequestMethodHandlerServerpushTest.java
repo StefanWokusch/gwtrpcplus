@@ -46,7 +46,7 @@ public class RequestMethodHandlerServerpushTest {
   @Before
   public void init() throws Throwable {
     MockitoAnnotations.initMocks(this);
-    toTest = new RequestMethodHandlerServerpush(helper, executor);
+    toTest = new RequestMethodHandlerServerpush(helper);
     toTest.encoder = encoder;
     service = new TestServiceImpl();
 

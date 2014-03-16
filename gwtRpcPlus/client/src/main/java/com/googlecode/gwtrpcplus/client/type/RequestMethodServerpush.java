@@ -2,6 +2,7 @@ package com.googlecode.gwtrpcplus.client.type;
 
 import java.util.HashMap;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.googlecode.gwtrpcplus.client.impl.AbstractRequestMethod;
@@ -77,14 +78,14 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 					if (orgResponse.startsWith("e") || orgResponse.startsWith("f"))
 						removeRequest(this);
 
-					// Not a alive Ping
-					if (!orgResponse.startsWith("p")) {
-						ServerPushCallback.nextIsFinished = orgResponse.startsWith("f");
-						// System.out.println("Expected Answer " + expectedAnswer +
-						// ServerPushCallback.nextIsFinished + " -> "
-						// + orgResponse.substring(0, 10));
-						RequestHelper.process(callback, data);
-					}
+					// // Not a alive Ping
+					// if (!orgResponse.startsWith("p")) {
+					ServerPushCallback.nextIsFinished = orgResponse.startsWith("f");
+					// System.out.println("Expected Answer " + expectedAnswer +
+					// ServerPushCallback.nextIsFinished + " -> "
+					// + orgResponse.substring(0, 10));
+					RequestHelper.process(callback, data);
+					// }
 					expectedAnswer++;
 					// Try adding the queued ones
 					if (!queuedAnswers.isEmpty() && queuedAnswers.containsKey(expectedAnswer)) {
@@ -97,9 +98,17 @@ public class RequestMethodServerpush extends AbstractRequestMethod {
 
 		@Override
 		public boolean onTimeout() {
-			callback.onError(null, new TimeoutException(resendAllowed));
-			if (!resendAllowed)
+			if (resendAllowed) {
+				expectedAnswer = 0;
+			} else {
 				removeRequest(this);
+				try {
+					callback.onError(null, new TimeoutException(resendAllowed));
+				} catch (Exception e) {
+					if (GWT.getUncaughtExceptionHandler() != null)
+						GWT.getUncaughtExceptionHandler().onUncaughtException(e);
+				}
+			}
 			return resendAllowed;
 		}
 	}

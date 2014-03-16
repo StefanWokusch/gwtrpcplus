@@ -115,7 +115,7 @@ public class RpcManagerClient {
 
 				@Override
 				public void onDisconnect() {
-					if (wrapper.state != ConnectionState.DISCONNECTED) {
+					if (wrapper.state == ConnectionState.CONNECTED) {
 						ConnectionWrapper lastActive = getActiveConnection();
 
 						wrapper.state = ConnectionState.DISCONNECTED;
@@ -129,7 +129,7 @@ public class RpcManagerClient {
 
 				@Override
 				public void onConnected() {
-					assert wrapper.state == ConnectionState.TRYCONNECT : "You cant call onconnected when you are " + wrapper.state;
+					assert wrapper.state == ConnectionState.TRYCONNECT : "You can't call onconnected when you are " + wrapper.state;
 					// ConnectionWrapper lastActive = getActiveConnection();
 
 					wrapper.state = ConnectionState.CONNECTED;
@@ -285,7 +285,7 @@ public class RpcManagerClient {
 	}
 
 	/**
-	 * Called when no Answer recieved. This ca
+	 * Called when no Answer recieved.
 	 */
 	@SuppressWarnings("unchecked")
 	protected void onTimeout() {
