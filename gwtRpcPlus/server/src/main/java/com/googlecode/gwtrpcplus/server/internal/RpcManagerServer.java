@@ -27,6 +27,35 @@ public class RpcManagerServer {
 
   private final ConcurrentHashMap<String, RpcPlusClient> clients = new ConcurrentHashMap<String, RpcPlusClient>();
 
+  private final Runnable obsoleteRemover = new Runnable() {
+    @Override
+    public void run() {
+      Iterator<Entry<String, RpcPlusClient>> it = clients.entrySet().iterator();
+      while (it.hasNext()) {
+        Entry<String, RpcPlusClient> e = it.next();
+        if (e.getValue().isObsolete()) {
+          logger.info("Client timeouted: id={}", e.getKey());
+          e.getValue().disconnect();
+          it.remove();
+        }
+      }
+      logger.trace("Connected Clients: {}", clients.size());
+    }
+  };
+
+  private final Runnable keepAliveSender = new Runnable() {
+    @Override
+    public void run() {
+      Iterator<Entry<String, RpcPlusClient>> it = clients.entrySet().iterator();
+      while (it.hasNext()) {
+        Entry<String, RpcPlusClient> e = it.next();
+        logger.trace("calling clients keepalive: id={}", e.getKey());
+        e.getValue().keepAlive();
+      }
+      logger.trace("Connected Clients: {}", clients.size());
+    }
+  };
+
   public RpcManagerServer(RequestMethodHandlerBasic basic, RequestMethodHandlerServerpush push,
       RequestMethodHandlerQueued queued, ScheduledExecutorService executor) {
     // TODO make configurable
@@ -34,21 +63,8 @@ public class RpcManagerServer {
     this.requestMethodHandlers.put(basic.getRequestTypeName(), basic);
     this.requestMethodHandlers.put(push.getRequestTypeName(), push);
     this.requestMethodHandlers.put(queued.getRequestTypeName(), queued);
-    executor.scheduleAtFixedRate(new Runnable() {
-      @Override
-      public void run() {
-        Iterator<Entry<String, RpcPlusClient>> it = clients.entrySet().iterator();
-        while (it.hasNext()) {
-          Entry<String, RpcPlusClient> e = it.next();
-          if (e.getValue().isObsolete()) {
-            logger.info("Client timeouted: id={}", e.getKey());
-            e.getValue().disconnect();
-            it.remove();
-          }
-        }
-        logger.trace("Connected Clients: {}", clients.size());
-      }
-    }, 0, 30, TimeUnit.SECONDS);
+    executor.scheduleAtFixedRate(obsoleteRemover, 0, 30, TimeUnit.SECONDS);
+    executor.scheduleAtFixedRate(keepAliveSender, 0, RpcPlusClient.KEEPALIVE_TIMEOUT / 2, TimeUnit.MILLISECONDS);
   }
 
   public void onCall(final String clientId, String data, String contextPath, String permStrongName,
@@ -116,7 +132,7 @@ public class RpcManagerServer {
     return get(clientId).getResponse();
   }
 
-  public String getResponse(String clientId, long timeout, TimeUnit unit) {
-    return get(clientId).getResponse(timeout, unit);
+  public String getResponseAndWait(String clientId) {
+    return get(clientId).getResponseAndWait();
   }
 }

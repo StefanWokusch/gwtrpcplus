@@ -3,7 +3,6 @@ package com.googlecode.gwtrpcplus.server.internal.servlet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -42,9 +41,8 @@ public class GwtRpcPlusBasicServlet extends HttpServlet {
 
     // TODO Move to RpcManager
     ArrayList<String> responses = new ArrayList<String>();
-
-    // WARN, waittime without response have to be > clients timeout
-    String r = manager.getResponse(clientId, 25, TimeUnit.SECONDS);
+    
+    String r = manager.getResponseAndWait(clientId);
     if (r != null) {
       // We have a response in the queue, so answer it directly
       responses.add(r);

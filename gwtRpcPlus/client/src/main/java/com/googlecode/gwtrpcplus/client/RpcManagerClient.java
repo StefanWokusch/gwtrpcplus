@@ -16,7 +16,7 @@ import com.google.gwt.user.client.Window.ClosingHandler;
 import com.googlecode.gwtrpcplus.client.Connection.RecieveHandler;
 import com.googlecode.gwtrpcplus.client.RequestMethod.ConnectionHandler;
 import com.googlecode.gwtrpcplus.client.RequestMethod.RequestPlus;
-import com.googlecode.gwtrpcplus.client.util.MyTimer;
+import com.googlecode.gwtrpcplus.client.util.TimeoutTimer;
 import com.googlecode.gwtrpcplus.client.util.MyWindow;
 
 /**
@@ -29,15 +29,15 @@ public class RpcManagerClient {
 	// TODO Fire onTimeout early (shorter timer) after first answer after timeout (to resend all
 	// requests fast)
 	public static void log(String text) {
-		// System.err.println(text);
+		System.err.println(text);
 		// GWT.log(text);
 	}
 
-	protected MyTimer timer;
+	protected TimeoutTimer timer;
 
 	private void schedule() {
 		if (timer == null) {
-			timer = new MyTimer.DefaultTimer() {
+			timer = new TimeoutTimer.DefaultTimer() {
 				@Override
 				public void fire() {
 					onTimeout();
@@ -99,6 +99,11 @@ public class RpcManagerClient {
 					schedule();
 					if (data.isEmpty())
 						return;
+					// Keepalive
+					if (data.equals(".\n")) {
+						log("keepalive recieved");
+						return;
+					}
 					assert data.contains("#") : "Illegal protocol: \"" + data + "\"";
 					log("recieve from " + c.getClass() + " " + (data.length() <= 100 ? data : data.subSequence(0, 100)));
 
@@ -124,8 +129,7 @@ public class RpcManagerClient {
 
 				@Override
 				public void onConnected() {
-					assert wrapper.state == ConnectionState.TRYCONNECT : "You cant call onconnected when you are "
-							+ wrapper.state;
+					assert wrapper.state == ConnectionState.TRYCONNECT : "You cant call onconnected when you are " + wrapper.state;
 					// ConnectionWrapper lastActive = getActiveConnection();
 
 					wrapper.state = ConnectionState.CONNECTED;

@@ -64,10 +64,10 @@ public class ConnectionWebsocket extends AbstractConnection {
 
     @Override
     public void onMessage(String message) {
-      // System.out.println("recieve:" + message.length());
+    	RpcManagerClient.log("recieve message:" + message.length()+" bytes:: "+message);
       buffer.append(message);
       if (message.endsWith("\n")) {
-        // System.out.println("Finished Message:" + buffer.length());
+      	RpcManagerClient.log("recieve message:" + message.length()+" bytes");
         onRecieve(buffer.toString());
 
         buffer = new StringBuffer();

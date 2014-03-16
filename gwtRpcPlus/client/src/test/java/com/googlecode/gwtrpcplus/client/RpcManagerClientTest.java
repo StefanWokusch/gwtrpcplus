@@ -19,7 +19,7 @@ import com.google.gwt.http.client.RequestCallback;
 import com.googlecode.gwtrpcplus.client.Connection.RecieveHandler;
 import com.googlecode.gwtrpcplus.client.RequestMethod.ConnectionHandler;
 import com.googlecode.gwtrpcplus.client.type.AbstractRequestPlus;
-import com.googlecode.gwtrpcplus.client.util.MyTimer;
+import com.googlecode.gwtrpcplus.client.util.TimeoutTimer;
 import com.googlecode.gwtrpcplus.client.util.MyWindow;
 
 public class RpcManagerClientTest {
@@ -40,7 +40,7 @@ public class RpcManagerClientTest {
 	@Mock
 	RequestCallback gwtRpcCallback;
 	@Mock
-	MyTimer timer;
+	TimeoutTimer timer;
 	@Mock
 	MyWindow window;
 

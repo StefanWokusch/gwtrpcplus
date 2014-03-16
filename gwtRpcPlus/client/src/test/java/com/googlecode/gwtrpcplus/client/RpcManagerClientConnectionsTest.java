@@ -22,7 +22,7 @@ import com.googlecode.gwtrpcplus.client.RequestMethod;
 import com.googlecode.gwtrpcplus.client.RpcManagerClient;
 import com.googlecode.gwtrpcplus.client.Connection.RecieveHandler;
 import com.googlecode.gwtrpcplus.client.type.RequestMethodBasic;
-import com.googlecode.gwtrpcplus.client.util.MyTimer;
+import com.googlecode.gwtrpcplus.client.util.TimeoutTimer;
 import com.googlecode.gwtrpcplus.client.util.MyWindow;
 
 
@@ -46,7 +46,7 @@ public class RpcManagerClientConnectionsTest {
   @Mock
   RequestCallback requestCallback;
   @Mock
-  MyTimer timer;
+  TimeoutTimer timer;
   @Mock
   MyWindow window;
 

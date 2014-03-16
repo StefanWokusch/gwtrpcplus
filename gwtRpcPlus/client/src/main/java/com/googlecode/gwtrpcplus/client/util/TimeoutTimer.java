@@ -1,18 +1,18 @@
 package com.googlecode.gwtrpcplus.client.util;
 
 import com.google.gwt.user.client.Timer;
-import com.googlecode.gwtrpcplus.server.internal.servlet.GwtRpcPlusBasicServlet;
+import com.googlecode.gwtrpcplus.server.internal.RpcPlusClient;
 
 
-public interface MyTimer {
+public interface TimeoutTimer {
 
-  abstract class DefaultTimer implements MyTimer {
+  abstract class DefaultTimer implements TimeoutTimer {
     /**
      * ms to fire a timeout
      * 
-     * WARN: {@link GwtRpcPlusBasicServlet}s timeout-check
+     * WARN: have to equals {@link RpcPlusClient}s KEEPALIVE_TIMEOUT
      */
-    private static final int TIMEOUT = 30000;
+    public static final int TIMEOUT = 30000;
 
     private Timer timer = new Timer() {
       @Override
