@@ -29,7 +29,7 @@ public class RpcManagerClient {
 	// TODO Fire onTimeout early (shorter timer) after first answer after timeout (to resend all
 	// requests fast)
 	public static void log(String text) {
-		System.err.println(text);
+		// System.err.println(text);
 		// GWT.log(text);
 	}
 
