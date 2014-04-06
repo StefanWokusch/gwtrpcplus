@@ -10,9 +10,9 @@ import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.googlecode.gwtrpcplus.server.GwtRpcPlusWebsocketFilter;
 import com.googlecode.gwtrpcplus.server.internal.RpcManagerServer;
 import com.googlecode.gwtrpcplus.server.internal.RpcPlusClient.RpcPlusClientHandler;
+import com.googlecode.gwtrpcplus.server.internal.WebsocketSetup;
 import com.googlecode.gwtrpcplus.server.internal.util.Logger;
 
 public class GwtRpcPlusWebsocket extends Endpoint {
@@ -24,7 +24,7 @@ public class GwtRpcPlusWebsocket extends Endpoint {
   @Override
   public void onOpen(Session session, EndpointConfig config) {
     HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
-    String contextPath = (String) config.getUserProperties().get(GwtRpcPlusWebsocketFilter.CONTEXT_PATH_NAME);
+    String contextPath = (String) config.getUserProperties().get(WebsocketSetup.CONTEXT_PATH_NAME);
 
     RpcManagerServer manager = (RpcManagerServer) config.getUserProperties().get(RpcManagerServer.class.getName());
 
