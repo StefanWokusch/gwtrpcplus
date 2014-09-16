@@ -34,7 +34,7 @@ public class RpcManagerServer {
       while (it.hasNext()) {
         Entry<String, RpcPlusClient> e = it.next();
         if (e.getValue().isObsolete()) {
-          logger.info("Client timeouted: id={}", e.getKey());
+          logger.info("Client timed out: id={}", e.getKey());
           e.getValue().disconnect();
           it.remove();
         }
@@ -82,7 +82,7 @@ public class RpcManagerServer {
       RpcPlusClient client = clients.remove(clientId);
       if (client != null) {
         client.disconnect();
-        logger.info("Client timeouted: id={}", clientId);
+        logger.info("Client timed out: id={}", clientId);
       }
       return;
     }

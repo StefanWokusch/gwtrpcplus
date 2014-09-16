@@ -23,7 +23,7 @@ public interface Connection {
     void onDisconnect();
 
     /**
-     * Call this when you are sure the Server timeouted. This force a onTimeout in RpcManager after the timeout
+     * Call this when you are sure the Server timed out. This forces an onTimeout in RpcManager after the timeout
      */
     void onTimeout();
   }
