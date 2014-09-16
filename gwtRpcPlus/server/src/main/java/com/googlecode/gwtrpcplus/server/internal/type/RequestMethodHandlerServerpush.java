@@ -121,6 +121,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
     final ClassLoader oldclassloader = Thread.currentThread().getContextClassLoader();
     helper.setThreadLocals(servlet, request);
     Thread.currentThread().setContextClassLoader(servlet.getClass().getClassLoader());
+    ReturnHandler<?> returnHandler = null;
     try {
       final RPCRequest rpcRequest;
       try {
@@ -128,7 +129,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
       } catch (NullPointerException e) {
         // This is only to avoid long exceptionstacks in logging
         // TODO fix this nullpointerbug instead
-        logger.warn("Cant Process Request, because of not loaded Policies. This could caused by a Serverrestart.", e);
+        logger.warn("Can't process Request, because of not loaded policies. This could be caused by a server restart.", e);
         return;
       }
 
@@ -147,7 +148,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
       int i = 0;
       for (Object o : rpcRequest.getParameters())
         params[i++] = o;
-      params[i] = new ReturnHandler() {
+      params[i] = returnHandler = new ReturnHandler() {
         @Override
         public void answer(Object obj) {
           if (!handlers.containsKey(uuid)) {
@@ -161,7 +162,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
 
             answerer.send("a" + answerId + "#" + answer);
           } catch (SerializationException e) {
-            logger.error("Cant send Serverpush-Message to the Client", e);
+            logger.error("Can't send Serverpush-Message to the Client", e);
           }
         }
 
@@ -195,7 +196,7 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
             final int answerId = nextAnswerId.getAndIncrement();
             answerer.send("e" + answerId + "#" + answer);
           } catch (Throwable e) {
-            logger.error("Can't Process Request because of thrown Exception at " + service + " with data " + data, e);
+            logger.error("Can't process Request because of thrown Exception at " + service + " with data " + data, e);
             answerer.send("e-" + e.getMessage());
           }
         }
@@ -206,10 +207,12 @@ public class RequestMethodHandlerServerpush implements RequestMethodHandler {
         throw new IllegalArgumentException("Illegal implementation: " + toNeededMethodString(rpcRequest.getMethod())
             + " returned null");
       myCancelHandler.setHandler(handler);
-
-
-    } catch (Throwable e) {
-      logger.error("Cant Process Request because of thrown Exception at " + service + " with data " + data + ":", e);
+    } catch (Exception e) {
+      logger.error("Can't process Request because of thrown Exception at " + service + " with data " + data + ":", e);
+      if (returnHandler != null)
+        returnHandler.abort(e);
+      else
+        answerer.send("e-" + e.getMessage());
       return;
     } finally {
       helper.setThreadLocals(servlet, null);
