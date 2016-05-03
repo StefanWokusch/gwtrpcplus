@@ -22,7 +22,7 @@
 	<define-configuration-property name="gwtrpcplus_moduleBaseUrl"
 		is_multi_valued="false" />
 	<set-configuration-property name="gwtrpcplus_moduleBaseUrl"
-		value="{hostPageBaseUrl}{moduleName}/" />
+		value="{moduleBaseUrl}/" />
 
 	<generate-with
 		class="com.googlecode.gwtrpcplus.rebind.ConnectionProviderGenerator">
