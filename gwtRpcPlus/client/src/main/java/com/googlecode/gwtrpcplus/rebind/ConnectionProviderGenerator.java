@@ -65,6 +65,7 @@ public class ConnectionProviderGenerator extends Generator {
     .getValues().get(0);
     baseUrl = "\"" + baseUrl + "\"";
     baseUrl = baseUrl.replace("{hostPageBaseUrl}", "\"+" + GWT.class.getName() + ".getHostPageBaseURL()+\"");
+    baseUrl = baseUrl.replace("{moduleBaseUrl}", "\"+" + GWT.class.getName() + ".getModuleBaseURL()+\"");
     baseUrl = baseUrl.replace("{moduleName}", "\"+" + GWT.class.getName() + ".getModuleName()+\"");
     baseUrl = baseUrl.replace("\"\"+", "");
     // System.out.println(baseUrl);
