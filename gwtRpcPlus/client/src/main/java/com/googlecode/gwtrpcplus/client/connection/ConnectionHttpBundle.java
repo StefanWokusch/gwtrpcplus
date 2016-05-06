@@ -10,13 +10,14 @@ public class ConnectionHttpBundle extends ConnectionHttp {
 	public ConnectionHttpBundle() {
 		super();
 	}
+
 	public ConnectionHttpBundle(String moduleBaseUrl) {
-	  super(GWT.getHostPageBaseURL() + GWT.getModuleName() + "/");
+		super(GWT.getModuleBaseURL() + "/");
 	}
-	
+
 	@Override
 	protected String getServletName() {
-	  return "gwtRpcPlusBundle";
+		return "gwtRpcPlusBundle";
 	}
 
 	private int requestAmount = 0;

@@ -38,14 +38,16 @@ public class ConnectionHttp extends AbstractConnection {
 	private boolean requestsPending = false;
 
 	/**
-	 * Amount of pending simple Callbacks (they can get multiple responses, so no serverpolling is needed)
+	 * Amount of pending simple Callbacks (they can get multiple responses, so
+	 * no serverpolling is needed)
 	 */
 	private int callbacksPending = 0;
 
 	/**
 	 * Flag to not do a serverpush ehen server isnt responding
 	 * 
-	 * this causes a bug after serverrecover, not timeouting some results, because the polling reschedule the ontimeout
+	 * this causes a bug after serverrecover, not timeouting some results,
+	 * because the polling reschedule the ontimeout
 	 */
 	private boolean notresponding = false;
 
@@ -89,14 +91,16 @@ public class ConnectionHttp extends AbstractConnection {
 				if (response.getStatusCode() == 0) // server don't responsed
 					onTimeout();
 				else
-					System.err.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
+					System.err
+							.println("Server responsed " + response.getStatusCode() + ": " + response.getStatusText());
 			} else {
 				final String[] resp = response.getText().split("\n");
 				// long start = System.currentTimeMillis();
 				for (String res : resp)
 					onRecieve(res);
 				// long duration = (System.currentTimeMillis() - start);
-				// System.out.println("Duration: " + duration + "ms (avg:" + duration / resp.length + ")");
+				// System.out.println("Duration: " + duration + "ms (avg:" +
+				// duration / resp.length + ")");
 			}
 
 			updateServerPush();
@@ -118,7 +122,8 @@ public class ConnectionHttp extends AbstractConnection {
 			int statusCode = response.getStatusCode();
 			notresponding = statusCode == 0;
 			if (statusCode != Response.SC_OK) {
-				if (statusCode != 0)// Ignore 0 (called by server don't responsed)
+				if (statusCode != 0)// Ignore 0 (called by server don't
+									// responsed)
 					System.err.println("Server responsed " + statusCode + ": " + response.getStatusText());
 				else
 					onTimeout();
@@ -147,17 +152,17 @@ public class ConnectionHttp extends AbstractConnection {
 	private final RequestBuilder longPushService;
 
 	public ConnectionHttp() {
-		this(GWT.getHostPageBaseURL() + GWT.getModuleName() + "/");
+		this(GWT.getModuleBaseURL() + "/");
 	}
 
-  protected String getServletName() {
-    return "gwtRpcPlusBasic";
-  }
+	protected String getServletName() {
+		return "gwtRpcPlusBasic";
+	}
 
 	public ConnectionHttp(String moduleBaseUrl) {
-		service = new RpcRequestBuilder().create(moduleBaseUrl+getServletName()).finish();
+		service = new RpcRequestBuilder().create(moduleBaseUrl + getServletName()).finish();
 		service.setHeader("clientId", Client.id);
-		longPushService = new RpcRequestBuilder().create(moduleBaseUrl+getServletName()).finish();
+		longPushService = new RpcRequestBuilder().create(moduleBaseUrl + getServletName()).finish();
 		longPushService.setHeader("clientId", Client.id);
 		longPushService.setHeader("longpush", "true");
 	}
